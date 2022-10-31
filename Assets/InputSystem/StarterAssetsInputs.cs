@@ -12,6 +12,9 @@ namespace StarterAssets
 		public Vector2 look;
 		public bool jump;
 		public bool sprint;
+		public bool melee;
+		public bool crouch;
+		public bool interact;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -43,6 +46,22 @@ namespace StarterAssets
 		{
 			SprintInput(value.isPressed);
 		}
+        //Lisätty melee input -SY
+        public void OnMelee(InputValue value)
+		{
+			MeleeInput(value.isPressed);
+		}
+        //Lisätty crouching input -SY
+        public void OnCrouch(InputValue value)
+		{
+			CrouchInput(value.isPressed);
+		}
+        //Lisätty interact input -SY
+        public void OnInteract(InputValue value)
+		{
+			InteractInput(value.isPressed);
+		}
+
 #endif
 
 
@@ -64,6 +83,21 @@ namespace StarterAssets
 		public void SprintInput(bool newSprintState)
 		{
 			sprint = newSprintState;
+		}
+		//Lisätty melee input -SY
+		public void MeleeInput(bool newMeleeState)
+		{
+			melee = newMeleeState;
+		}
+		//Lisätty crouching input -SY
+		public void CrouchInput(bool newCrouchState)
+		{
+			crouch = newCrouchState;
+		}
+		//Lisätty interact input -SY
+		public void InteractInput(bool newInteractState)
+		{
+			interact = newInteractState;
 		}
 
 		private void OnApplicationFocus(bool hasFocus)

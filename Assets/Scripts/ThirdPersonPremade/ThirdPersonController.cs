@@ -97,14 +97,16 @@ namespace StarterAssets
         private int _animIDJump;
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
+        private int _animIDMelee;
+        private int _animIDInteract;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
 #endif
         private Animator _animator;
         private CharacterController _controller;
-        private StarterAssetsInputs _input;
-        private GameObject _mainCamera;
+        [SerializeField]private StarterAssetsInputs _input;
+        private Transform _mainCamera;
 
         private const float _threshold = 0.01f;
 
@@ -125,11 +127,7 @@ namespace StarterAssets
 
         private void Awake()
         {
-            // get a reference to our main camera
-            if (_mainCamera == null)
-            {
-                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            }
+            _mainCamera = Camera.main.transform;
         }
 
         private void Start()
@@ -154,11 +152,30 @@ namespace StarterAssets
 
         private void Update()
         {
-            _hasAnimator = TryGetComponent(out _animator);
-
-            JumpAndGravity();
+            MeleeCheck();
             GroundedCheck();
-            Move();
+            JumpAndGravity();
+            if (!_input.melee && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching"))
+            {
+                Move();
+            }
+            InteractCheck();
+        }
+
+        private void InteractCheck()
+        {
+        }
+
+        private void MeleeCheck()
+        {
+            if (_input.melee)
+            {
+                _animator.SetBool(_animIDMelee, true);
+            }
+            else
+            {
+                _animator.SetBool(_animIDMelee, false);
+            }
         }
 
         private void LateUpdate()
@@ -173,6 +190,7 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+            _animIDMelee = Animator.StringToHash("Melee2");
         }
 
         private void GroundedCheck()
@@ -256,7 +274,7 @@ namespace StarterAssets
             if (_input.move != Vector2.zero)
             {
                 _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                  _mainCamera.transform.eulerAngles.y;
+                                  _mainCamera.eulerAngles.y;
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                     RotationSmoothTime);
 
