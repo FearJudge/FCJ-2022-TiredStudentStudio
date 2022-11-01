@@ -298,6 +298,10 @@ public class NPCLogic : MonoBehaviour, ICarryable
             {
                 incapacitate = true;
             }
+            if (ThirdPersonController._currentAnimation == "Pickup" && incapacitate)
+            {
+                SetCarriedState(GameObject.Find("PlayerArmature").transform);
+            }
         }
         else
         {
