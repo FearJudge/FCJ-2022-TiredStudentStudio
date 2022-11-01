@@ -242,6 +242,11 @@ public class NPCLogic : MonoBehaviour, ICarryable
         _shadowsToChase--;
     }
 
+    void Incapacitate()
+    {
+        State = VillagerState.Incapacitated;
+    }
+
     private void Update()
     {
         if (_carryMeSenpai != null) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; }
@@ -251,7 +256,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
         if (incapacitate)
         {
-            State = VillagerState.Incapacitated;
+            Incapacitate();
             return;
         }
 
@@ -290,6 +295,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (meleeHitCount > 0 && meleeTimer > 0)
         {
             meleeTimer -= Time.deltaTime;
+
             if (meleeHitCount == hitsToKnockout)
             {
                 incapacitate = true;
@@ -316,15 +322,16 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     private void OnTriggerEnter(Collider other)
     {
+        
         if (other.CompareTag("Fist"))
         {
             if (ThirdPersonController._currentAnimation == "Punching_Left" || ThirdPersonController._currentAnimation == "Punching_Right")
             {
                 meleeHitCount++;
             }
-            if (ThirdPersonController._currentAnimation == "Pickup" && incapacitate)
+            if (ThirdPersonController._currentAnimation == "Pickup" && (state == VillagerState.Incapacitated || state == VillagerState.Carried))
             {
-                SetCarriedState(GameObject.Find("PlayerArmature").transform);
+                Interact();
             }
         }
         else
@@ -346,7 +353,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         State = VillagerState.LookingForPlayer;
         for (int a = 0; a < _lookAroundSteps; a++)
         {
-            if (state == VillagerState.AttackingPlayer) { yield break; }
+            if (state != VillagerState.LookingForPlayer) { yield break; }
             nma.destination += new Vector3(Random.Range(-_lookAroundRange, _lookAroundRange), 0f, Random.Range(-_lookAroundRange, _lookAroundRange));
             yield return new WaitForSeconds(_waitLookAround / _lookAroundSteps);
         }
@@ -376,7 +383,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     }
 
     public void ReleaseCarriedState()
-    {
+    { 
         if (state != VillagerState.Carried) { return; }
         _carryMeSenpai = null;
         State = VillagerState.Incapacitated;
@@ -390,7 +397,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     public void Interact()
     {
-        if (AmICarryable()) { SetCarriedState(GameManager.playerTransform, new Vector3(0f, 0.5f, 0f)); }
+        if (AmICarryable()) { SetCarriedState(GameManager.playerTransform, new Vector3(0f, 0f, 0f)); }
         else { ReleaseCarriedState(); }
     }
 

@@ -229,6 +229,11 @@ namespace StarterAssets
                 _fistColRight.enabled = false;
                 _fistColLeft.enabled = true;
             }
+            else if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Interact") && _animator.GetCurrentAnimatorStateInfo(0).normalizedTime <= 0.5f)
+            {
+                _fistColRight.enabled = true;
+                _fistColLeft.enabled = false;
+            }
             else
             {
                 _fistColRight.enabled = false;
