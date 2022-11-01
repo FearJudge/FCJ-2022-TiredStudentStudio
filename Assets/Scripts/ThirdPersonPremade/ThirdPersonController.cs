@@ -106,6 +106,8 @@ namespace StarterAssets
 
         // melee attack components
         #region
+        public int meleeHitCount;
+
         [SerializeField] private SphereCollider _fistColLeft; 
         [SerializeField] private SphereCollider _fistColRight; 
         #endregion
@@ -217,11 +219,26 @@ namespace StarterAssets
 
         private void MeleeCheck()
         {
+            if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Right"))
+            {
+                _fistColRight.enabled = true;
+                _fistColLeft.enabled = false;
+            }
+            else if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left"))
+            {
+                _fistColRight.enabled = false;
+                _fistColLeft.enabled = true;
+            }
+            else
+            {
+                _fistColRight.enabled = false;
+                _fistColLeft.enabled = false;
+            }
+
             if (_hasAnimator)
             {
                 if (_input.melee)
                 {
-
                     _animator.SetBool(_animIDMelee, true);
                 }
                 else

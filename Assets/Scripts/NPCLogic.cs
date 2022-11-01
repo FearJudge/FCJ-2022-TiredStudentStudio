@@ -106,6 +106,10 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     public bool incapacitate;
 
+    public int maxTimeToIncapacitate = 4;
+    public float meleeTimer;
+    public int meleeHitCount;
+
     [SerializeField] private ThirdPersonController ThirdPersonController;
 
     public VillagerState State {
@@ -242,6 +246,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (_carryMeSenpai != null) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; }
         if (!nma.enabled) { return; }
 
+        CheckForMeleeAttackCount();
+
         if (incapacitate)
         {
             State = VillagerState.Incapacitated;
@@ -278,6 +284,23 @@ public class NPCLogic : MonoBehaviour, ICarryable
         }
     }
 
+    private void CheckForMeleeAttackCount()
+    {
+        if (meleeHitCount > 0 && meleeTimer > 0)
+        {
+            meleeTimer -= Time.deltaTime;
+            if (meleeHitCount == 3)
+            {
+                incapacitate = true;
+            }
+        }
+        else
+        {
+            meleeHitCount = 0;
+            meleeTimer = maxTimeToIncapacitate;
+        }
+    }
+
     private void OnFootstep(AnimationEvent animationEvent)
     {
         if (animationEvent.animatorClipInfo.weight > 0.5f)
@@ -294,9 +317,9 @@ public class NPCLogic : MonoBehaviour, ICarryable
     {
         if (other.CompareTag("Fist"))
         {
-            if (ThirdPersonController._currentAnimation == "Punching_Mirror" || ThirdPersonController._currentAnimation == "Punching")
+            if (ThirdPersonController._currentAnimation == "Punching_Left" || ThirdPersonController._currentAnimation == "Punching_Right")
             {
-                incapacitate = true;
+                meleeHitCount++;
             }
             if (ThirdPersonController._currentAnimation == "Pickup" && incapacitate)
             {
@@ -369,4 +392,5 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (AmICarryable()) { SetCarriedState(GameManager.playerTransform, new Vector3(0f, 0.5f, 0f)); }
         else { ReleaseCarriedState(); }
     }
+
 }
