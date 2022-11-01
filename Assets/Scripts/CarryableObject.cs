@@ -39,9 +39,19 @@ public class CarryableObject : MonoBehaviour, ICarryable
         if (!_carried) { return; }
         transform.position = _senpai.position + _carryOffset;
     }
+
+    public bool AmIInteractable()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Interact()
+    {
+        throw new System.NotImplementedException();
+    }
 }
 
-public interface ICarryable
+public interface ICarryable : IInteract
 {
     bool AmICarryable();
     void SetCarriedState(Transform toAttachTo, Vector3 offset = default);

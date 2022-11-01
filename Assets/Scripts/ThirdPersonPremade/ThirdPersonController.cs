@@ -99,6 +99,8 @@ namespace StarterAssets
         private int _animIDMotionSpeed;
         private int _animIDMelee;
         private int _animIDInteract;
+        private int _animIDCrouching;
+        
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
@@ -152,15 +154,17 @@ namespace StarterAssets
 
         private void Update()
         {
-            MeleeCheck();
             GroundedCheck();
             JumpAndGravity();
-            if (!_input.melee && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching"))
-            {
+            if (!_input.melee && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching") && !_input.interact && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Interact"))
+            { 
                 Move();
             }
+            MeleeCheck();
             InteractCheck();
+            CrouchCheck();
         }
+
 
         // Hacky workaround for the input system error, need to check if this causes
         // problems with retrying etc.
@@ -168,20 +172,49 @@ namespace StarterAssets
         {
             _playerInput.actions = null;
         }
+        private void CrouchCheck()
+        {
+            if (_hasAnimator)
+            {
+                if (_input.crouch)
+                {
+                    _animator.SetBool(_animIDCrouching, true);
+                }
+                else
+                {
+                    _animator.SetBool(_animIDCrouching, false);
+                }
+            }
+
+        }
 
         private void InteractCheck()
         {
+            if (_hasAnimator)
+            {
+                if (_input.interact)
+                {
+                    _animator.SetBool(_animIDInteract, true);
+                }
+                else
+                {
+                    _animator.SetBool(_animIDInteract, false);
+                }
+            }
         }
 
         private void MeleeCheck()
         {
-            if (_input.melee)
+            if (_hasAnimator)
             {
-                _animator.SetBool(_animIDMelee, true);
-            }
-            else
-            {
-                _animator.SetBool(_animIDMelee, false);
+                if (_input.melee)
+                {
+                    _animator.SetBool(_animIDMelee, true);
+                }
+                else
+                {
+                    _animator.SetBool(_animIDMelee, false);
+                }
             }
         }
 
@@ -198,6 +231,8 @@ namespace StarterAssets
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDMelee = Animator.StringToHash("Melee2");
+            _animIDInteract = Animator.StringToHash("Interact");
+            _animIDCrouching = Animator.StringToHash("Crouch");
         }
 
         private void GroundedCheck()

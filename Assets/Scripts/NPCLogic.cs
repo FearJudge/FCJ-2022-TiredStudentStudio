@@ -103,6 +103,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     VillagerState state = VillagerState.DoingTasks;
 
+    public bool incapacitate;
+
     public VillagerState State {
         get
         { return state; }
@@ -235,6 +237,12 @@ public class NPCLogic : MonoBehaviour, ICarryable
     {
         if (_carryMeSenpai != null) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; }
         if (!nma.enabled) { return; }
+
+        if (incapacitate)
+        {
+            State = VillagerState.Incapacitated;
+        }
+
         if (nma.remainingDistance <= targetRadius) { ReEvaluate(); }
         if (eyes.inVision && (state == VillagerState.DoingTasks || state == VillagerState.LookingForPlayer))
         {
@@ -325,5 +333,15 @@ public class NPCLogic : MonoBehaviour, ICarryable
         _carryMeSenpai = null;
         State = VillagerState.Incapacitated;
         if (_rigidbody != null) { _rigidbody.isKinematic = false; }
+    }
+
+    public bool AmIInteractable()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Interact()
+    {
+        throw new System.NotImplementedException();
     }
 }
