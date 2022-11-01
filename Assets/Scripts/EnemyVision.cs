@@ -19,9 +19,7 @@ public class EnemyVision : MonoBehaviour
 
         Ray castRay = new Ray(mainBody.transform.position + stdOffset, other.transform.position - mainBody.transform.position);
         bool saw = Physics.Raycast(castRay, out RaycastHit info, maximumDistanceToSee, lm);
-        Debug.DrawRay(mainBody.transform.position + stdOffset, other.transform.position - mainBody.transform.position, Color.red, 2f);
-        if (saw) { Debug.Log(info.transform.name); }
-        if (saw && info.transform.tag == tagToFind) { inVision = true; lastSeen = info.point; Debug.Log(info.transform.tag); }
+        if (saw && info.transform.tag == tagToFind) { inVision = true; lastSeen = info.point; }
     }
 
     private void OnTriggerExit(Collider other)

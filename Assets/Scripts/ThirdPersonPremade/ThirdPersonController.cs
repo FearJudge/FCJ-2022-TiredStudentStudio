@@ -162,6 +162,13 @@ namespace StarterAssets
             InteractCheck();
         }
 
+        // Hacky workaround for the input system error, need to check if this causes
+        // problems with retrying etc.
+        private void OnDisable()
+        {
+            _playerInput.actions = null;
+        }
+
         private void InteractCheck()
         {
         }
@@ -328,6 +335,7 @@ namespace StarterAssets
                     {
                         _animator.SetBool(_animIDJump, true);
                     }
+
                 }
 
                 // jump timeout
