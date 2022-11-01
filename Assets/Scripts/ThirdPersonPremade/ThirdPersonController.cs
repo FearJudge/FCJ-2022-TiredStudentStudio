@@ -221,6 +221,7 @@ namespace StarterAssets
             {
                 if (_input.melee)
                 {
+
                     _animator.SetBool(_animIDMelee, true);
                 }
                 else

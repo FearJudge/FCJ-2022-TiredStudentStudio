@@ -125,7 +125,6 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     private void Awake()
     {
-        ThirdPersonController = GameObject.FindGameObjectWithTag("Player").GetComponent<ThirdPersonController>();
         InvokeRepeating("CheckLogic", 0.4f, 0.4f);
         _animator = GetComponent<Animator>();
         _controller = GetComponent<CharacterController>();
@@ -137,6 +136,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     private void Start()
     {
+        ThirdPersonController = GameObject.Find("PlayerArmature").GetComponent<ThirdPersonController>();
         SortTasks();
     }
 
@@ -245,6 +245,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (incapacitate)
         {
             State = VillagerState.Incapacitated;
+            return;
         }
 
         if (nma.remainingDistance <= targetRadius) { ReEvaluate(); }
@@ -293,7 +294,10 @@ public class NPCLogic : MonoBehaviour, ICarryable
     {
         if (other.CompareTag("Fist"))
         {
+            if (ThirdPersonController._currentAnimation == "Punching_Mirror" || ThirdPersonController._currentAnimation == "Punching")
+            {
                 incapacitate = true;
+            }
         }
         else
         {
