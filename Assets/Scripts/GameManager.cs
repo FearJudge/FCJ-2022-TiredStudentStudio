@@ -25,6 +25,8 @@ public class GameManager : MonoBehaviour
     public int targetsPerGame = 3;
     public int innocentsPerGame = 12;
     public int innocentRandomRangeUpDown = 0;
+    public static Transform playerTransform;
+    public Transform elevateToStaticPlayer;
 
     private void Start()
     {

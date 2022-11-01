@@ -337,11 +337,12 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     public bool AmIInteractable()
     {
-        throw new System.NotImplementedException();
+        return (AmICarryable() || _carryMeSenpai != null);
     }
 
     public void Interact()
     {
-        throw new System.NotImplementedException();
+        if (AmICarryable()) { SetCarriedState(GameManager.playerTransform, new Vector3(0f, 0.5f, 0f)); }
+        else { ReleaseCarriedState(); }
     }
 }
