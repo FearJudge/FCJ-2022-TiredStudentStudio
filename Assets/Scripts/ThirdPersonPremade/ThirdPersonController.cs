@@ -106,19 +106,23 @@ namespace StarterAssets
 
         // melee attack components
         #region
-        [SerializeField] private SphereCollider _fistCol; 
+        [SerializeField] private SphereCollider _fistColLeft; 
+        [SerializeField] private SphereCollider _fistColRight; 
         #endregion
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
 #endif
         private Animator _animator;
         private CharacterController _controller;
-        [SerializeField]private StarterAssetsInputs _input;
+        public StarterAssetsInputs _input;
         private Transform _mainCamera;
 
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
+
+        private AnimatorClipInfo[] animatorClipInfo;
+        public string _currentAnimation;
 
         private bool IsCurrentDeviceMouse
         {
@@ -160,6 +164,8 @@ namespace StarterAssets
 
         private void Update()
         {
+            animatorClipInfo = _animator.GetCurrentAnimatorClipInfo(0);
+            _currentAnimation = animatorClipInfo[0].clip.name;
             GroundedCheck();
             JumpAndGravity();
             if (!_input.melee && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching") && !_input.interact && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Interact"))

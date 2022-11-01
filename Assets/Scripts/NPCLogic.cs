@@ -1,3 +1,4 @@
+using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -105,6 +106,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     public bool incapacitate;
 
+    [SerializeField] private ThirdPersonController ThirdPersonController;
+
     public VillagerState State {
         get
         { return state; }
@@ -122,6 +125,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     private void Awake()
     {
+        ThirdPersonController = GameObject.FindGameObjectWithTag("Player").GetComponent<ThirdPersonController>();
         InvokeRepeating("CheckLogic", 0.4f, 0.4f);
         _animator = GetComponent<Animator>();
         _controller = GetComponent<CharacterController>();
@@ -282,6 +286,18 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 var index = Random.Range(0, FootstepAudioClips.Length);
                 AudioSource.PlayClipAtPoint(FootstepAudioClips[index], transform.TransformPoint(_controller.center), FootstepAudioVolume);
             }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Fist"))
+        {
+                incapacitate = true;
+        }
+        else
+        {
+            return;
         }
     }
 

@@ -2217,6 +2217,7 @@ GameObject:
   - component: {fileID: 7777629487560298506}
   - component: {fileID: 508871123540736761}
   - component: {fileID: 7777629487560298507}
+  - component: {fileID: 2765583567686775931}
   m_Layer: 8
   m_Name: NPCArmature
   m_TagString: Untagged
@@ -2332,9 +2333,13 @@ MonoBehaviour:
   FootstepAudioVolume: 1
   LandingAudioClip: {fileID: 8300000, guid: ff697d3070687ce4583faa0561a145a2, type: 3}
   targetRadius: 0.3
+  incapacitate: 0
+  ThirdPersonController: {fileID: 0}
   killBy: 0
   trait: 0
   haunted: 0
+  onSpotting: 0
+  homeLocation: {x: 0, y: 0, z: 0}
   eyes: {fileID: 6207210755220412408}
 --- !u!114 &508871123540736761
 MonoBehaviour:
@@ -2375,6 +2380,20 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!136 &2765583567686775931
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7777629487560298505}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  m_Radius: 0.2794317
+  m_Height: 1.7998137
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.92973113, z: 0.00026500225}
 --- !u!1 &7808166278596907636
 GameObject:
   m_ObjectHideFlags: 0
