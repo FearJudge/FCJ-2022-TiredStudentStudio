@@ -80,18 +80,20 @@ namespace StarterAssets
         private float _cinemachineTargetPitch;
 
         // player
+        #region
         private float _speed;
         private float _animationBlend;
         private float _targetRotation = 0.0f;
         private float _rotationVelocity;
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
-
+        #endregion
         // timeout deltatime
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
 
         // animation IDs
+        #region
         private int _animIDSpeed;
         private int _animIDGrounded;
         private int _animIDJump;
@@ -100,8 +102,12 @@ namespace StarterAssets
         private int _animIDMelee;
         private int _animIDInteract;
         private int _animIDCrouching;
-        
+        #endregion
 
+        // melee attack components
+        #region
+        [SerializeField] private SphereCollider _fistCol; 
+        #endregion
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
 #endif
