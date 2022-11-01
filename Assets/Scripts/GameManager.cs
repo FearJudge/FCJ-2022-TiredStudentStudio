@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
         public NPCLogic.GoalToAchieve killMethod = NPCLogic.GoalToAchieve.DoNotKill;
         public NPCLogic.VillagerUniqueTrait personTrait = NPCLogic.VillagerUniqueTrait.NoTrait;
         public NPCLogic.HauntedBy personPosessed = NPCLogic.HauntedBy.None;
+        public NPCLogic.VillagerType bravery = NPCLogic.VillagerType.Attacking;
 
         public bool overrideCharacterDailyRoutine = false;
         public List<NPCLogic.VillagerTask> overridenTasks = new List<NPCLogic.VillagerTask>();
@@ -48,6 +49,7 @@ public class GameManager : MonoBehaviour
             _newLogic.killBy = _randomCard.killMethod;
             _newLogic.haunted = _randomCard.personPosessed;
             _newLogic.trait = _randomCard.personTrait;
+            _newLogic.onSpotting = _randomCard.bravery;
             cardsToPrint.Add(_randomCard.cardArt);
         }
         for (int j = 0; j < innocentsPerGame; j++)
@@ -60,6 +62,7 @@ public class GameManager : MonoBehaviour
             _newLogic.killBy = NPCLogic.GoalToAchieve.DoNotKill;
             _newLogic.haunted = NPCLogic.HauntedBy.None;
             _newLogic.trait = NPCLogic.VillagerUniqueTrait.NoTrait;
+            _newLogic.onSpotting = (NPCLogic.VillagerType)Random.Range(0, 3);
         }
         villagerKnowledge.GatherLocations();
     }

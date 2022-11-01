@@ -5,13 +5,28 @@ using UnityEngine.AI;
 
 public class NPCLogic : MonoBehaviour, ICarryable
 {
+    public delegate void AlertEvent(GameObject objectToNotice);
+    public static event AlertEvent NoticedPlayer;
+    public static event AlertEvent LostInterest;
+
     public enum VillagerState
     {
         DoingTasks,
         Incapacitated,
         AttackingPlayer,
         LookingForPlayer,
-        Carried
+        NervouslyWaiting,
+        Carried,
+        FleeToHome,
+        RunAroundAimlessly
+    }
+
+    public enum VillagerType
+    {
+        Attacking,
+        Fleeing,
+        Delirius,
+        RandomlyAttacksFlees
     }
 
     public enum VillagerUniqueTrait
@@ -76,6 +91,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private const float _waitLookAround = 7f;
     private const int _lookAroundSteps = 5;
     private const float _lookAroundRange = 1f;
+    private int _shadowsToChase = 0;
+    private const int _shadowsSeenWhenDelirious = 6;
     private Animator _animator;
     private bool _hasAnimator;
     private CharacterController _controller;
@@ -96,6 +113,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
     public GoalToAchieve killBy = GoalToAchieve.DoNotKill;
     public VillagerUniqueTrait trait = VillagerUniqueTrait.NoTrait;
     public HauntedBy haunted = HauntedBy.None;
+    public VillagerType onSpotting = VillagerType.Attacking;
+    public Vector3 homeLocation;
     public EnemyVision eyes;
 
 
@@ -122,11 +141,13 @@ public class NPCLogic : MonoBehaviour, ICarryable
             case VillagerState.DoingTasks:
                 nma.enabled = true;
                 nma.speed = speedWalkRun.x;
+                LostInterest?.Invoke(gameObject);
                 DoTask();
                 break;
             case VillagerState.Incapacitated:
                 if (nma.enabled) { nma.ResetPath(); }
                 nma.enabled = false;
+                LostInterest?.Invoke(gameObject);
                 _animator.SetBool("KnockedOut", true);
                 _animator.SetBool("Carried", false);
                 break;
@@ -142,6 +163,21 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 if (nma.enabled) { nma.ResetPath(); }
                 nma.enabled = false;
                 _animator.SetBool("Carried", true);
+                break;
+            case VillagerState.FleeToHome:
+                nma.enabled = true;
+                nma.speed = speedWalkRun.y;
+                FleeHome();
+                break;
+            case VillagerState.NervouslyWaiting:
+                nma.enabled = true;
+                nma.speed = speedWalkRun.x;
+                break;
+            case VillagerState.RunAroundAimlessly:
+                nma.enabled = true;
+                nma.speed = speedWalkRun.y;
+                _shadowsToChase = _shadowsSeenWhenDelirious;
+                ChaseShadows();
                 break;
             default:
                 break;
@@ -160,10 +196,6 @@ public class NPCLogic : MonoBehaviour, ICarryable
             case VillagerState.DoingTasks:
                 DoTask();
                 break;
-            case VillagerState.Incapacitated:
-                break;
-            case VillagerState.AttackingPlayer:
-                break;
             default:
                 break;
         }
@@ -172,6 +204,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
     void ReEvaluate()
     {
         if (state == VillagerState.AttackingPlayer) { StartCoroutine(LoseInterest()); }
+        else if (state == VillagerState.FleeToHome) { StartCoroutine(LoseFear()); }
+        else if (state == VillagerState.RunAroundAimlessly) { ChaseShadows(); }
     }
 
     public void DoTask()
@@ -180,10 +214,21 @@ public class NPCLogic : MonoBehaviour, ICarryable
         nma.destination = VillageBrain.locationDict[vt.location].position;
     }
 
+    public void FleeHome()
+    {
+        nma.destination = homeLocation;
+    }
+
     public void ChasePlayer()
     {
-        //State = VillagerState.Incapacitated; return;
         nma.destination = eyes.lastSeen;
+    }
+
+    public void ChaseShadows()
+    {
+        if (_shadowsToChase == 0) { State = VillagerState.DoingTasks; return; }
+        nma.destination = nma.destination + new Vector3(Random.Range(-6f, 6f), 0f, Random.Range(-6f, 6f));
+        _shadowsToChase--;
     }
 
     private void Update()
@@ -191,12 +236,32 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (_carryMeSenpai != null) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; }
         if (!nma.enabled) { return; }
         if (nma.remainingDistance <= targetRadius) { ReEvaluate(); }
-        if (eyes.inVision && (state == VillagerState.DoingTasks || state == VillagerState.LookingForPlayer)) { State = VillagerState.AttackingPlayer; }
+        if (eyes.inVision && (state == VillagerState.DoingTasks || state == VillagerState.LookingForPlayer))
+        {
+            NoticedPlayer?.Invoke(gameObject);
+            switch (onSpotting)
+            {
+                case VillagerType.Attacking:
+                    State = VillagerState.AttackingPlayer;
+                    break;
+                case VillagerType.Fleeing:
+                    State = VillagerState.FleeToHome;
+                    break;
+                case VillagerType.Delirius:
+                    State = VillagerState.RunAroundAimlessly;
+                    break;
+                case VillagerType.RandomlyAttacksFlees:
+                    if (Random.Range(0, 2) == 1) { State = VillagerState.FleeToHome; }
+                    else { State = VillagerState.AttackingPlayer; }
+                    break;
+                default:
+                    break;
+            }}
         if (state == VillagerState.AttackingPlayer) { ChasePlayer(); }
 
         if (_hasAnimator)
         {
-            _animator.SetFloat("Speed", nma.velocity.magnitude * ((state == VillagerState.AttackingPlayer) ? _speedWalkRunAnim.y : _speedWalkRunAnim.x) / nma.speed);
+            _animator.SetFloat("Speed", nma.velocity.magnitude * ((nma.speed == speedWalkRun.y) ? _speedWalkRunAnim.y : _speedWalkRunAnim.x) / nma.speed);
         }
     }
 
@@ -230,6 +295,13 @@ public class NPCLogic : MonoBehaviour, ICarryable
             yield return new WaitForSeconds(_waitLookAround / _lookAroundSteps);
         }
         if (state == VillagerState.AttackingPlayer) { yield break; }
+        State = VillagerState.DoingTasks;
+    }
+
+    IEnumerator LoseFear()
+    {
+        State = VillagerState.NervouslyWaiting;
+        yield return new WaitForSeconds(_waitLookAround);
         State = VillagerState.DoingTasks;
     }
 
