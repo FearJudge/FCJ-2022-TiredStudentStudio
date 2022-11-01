@@ -107,6 +107,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     public bool incapacitate;
 
     public int maxTimeToIncapacitate = 4;
+    public int hitsToKnockout = 3;
     public float meleeTimer;
     public int meleeHitCount;
 
@@ -289,7 +290,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (meleeHitCount > 0 && meleeTimer > 0)
         {
             meleeTimer -= Time.deltaTime;
-            if (meleeHitCount == 3)
+            if (meleeHitCount == hitsToKnockout)
             {
                 incapacitate = true;
             }
