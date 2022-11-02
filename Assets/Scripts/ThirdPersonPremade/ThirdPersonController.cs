@@ -75,6 +75,8 @@ namespace StarterAssets
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
 
+        public bool crouched = false;
+
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
@@ -109,8 +111,11 @@ namespace StarterAssets
         public int meleeHitCount;
 
         [SerializeField] private SphereCollider _fistColLeft; 
-        [SerializeField] private SphereCollider _fistColRight; 
+        [SerializeField] private SphereCollider _fistColRight;
         #endregion
+
+        public NPCLogic heldPerson;
+
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
 #endif
@@ -167,11 +172,11 @@ namespace StarterAssets
         private void Update()
         {
             animatorClipInfo = _animator.GetCurrentAnimatorClipInfo(0);
-            _currentAnimation = animatorClipInfo[0].clip.name;
+            if (animatorClipInfo.Length > 0) { _currentAnimation = animatorClipInfo[0].clip.name; }
             GroundedCheck();
             JumpAndGravity();
-            if (!_input.melee && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching") && !_input.interact && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Interact"))
-            { 
+            if (!_animator.GetCurrentAnimatorStateInfo(0).IsName("Interact") && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left") && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Right"))
+            {
                 Move();
             }
             MeleeCheck();
@@ -190,13 +195,15 @@ namespace StarterAssets
         {
             if (_hasAnimator)
             {
-                if (_input.crouch)
+                if (_input.crouch && heldPerson == null)
                 {
                     _animator.SetBool(_animIDCrouching, true);
+                    crouched = true;
                 }
                 else
                 {
                     _animator.SetBool(_animIDCrouching, false);
+                    crouched = false;
                 }
             }
 
@@ -208,6 +215,7 @@ namespace StarterAssets
             {
                 if (_input.interact)
                 {
+                    if (heldPerson != null) { heldPerson.ReleaseCarriedState(true); }
                     _animator.SetBool(_animIDInteract, true);
                 }
                 else
@@ -242,6 +250,7 @@ namespace StarterAssets
 
             if (_hasAnimator)
             {
+                if (heldPerson != null) { _input.melee = false; }
                 if (_input.melee)
                 {
                     _animator.SetBool(_animIDMelee, true);
@@ -378,6 +387,7 @@ namespace StarterAssets
         {
             if (Grounded)
             {
+                if (heldPerson != null) { _input.jump = false; }
                 // reset the fall timeout timer
                 _fallTimeoutDelta = FallTimeout;
 

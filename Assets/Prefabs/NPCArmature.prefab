@@ -2334,7 +2334,10 @@ MonoBehaviour:
   LandingAudioClip: {fileID: 8300000, guid: ff697d3070687ce4583faa0561a145a2, type: 3}
   targetRadius: 0.3
   incapacitate: 0
-  ThirdPersonController: {fileID: 0}
+  maxTimeToIncapacitate: 4
+  meleeTimer: 0
+  meleeHitCount: 0
+  _thirdPersonController: {fileID: 0}
   killBy: 0
   trait: 0
   haunted: 0
@@ -2390,7 +2393,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 0.2794317
+  m_Radius: 0.28
   m_Height: 1.7998137
   m_Direction: 1
   m_Center: {x: 0, y: 0.92973113, z: 0.00026500225}
