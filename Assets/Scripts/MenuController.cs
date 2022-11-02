@@ -25,4 +25,9 @@ public class MenuController : MonoBehaviour
         LevelChanger lc = go.GetComponent<LevelChanger>();
         lc.StartTransition(levelName);
     }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
 }

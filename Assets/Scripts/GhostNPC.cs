@@ -28,13 +28,22 @@ public class GhostNPC : MonoBehaviour
         }
     }
 
+    IEnumerator Possess(GameObject other)
+    {
+        yield return new WaitForSeconds(0.2f);
+        if (gameObject != null)
+        {
+            other.GetComponent<StarterAssets.ThirdPersonController>().Damage();
+            Destroy(gameObject);
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Fist") { Destroy(gameObject); }
         else if (other.tag == "Player")
         {
-            other.gameObject.GetComponent<StarterAssets.ThirdPersonController>().Damage();
-            Destroy(gameObject);
+            StartCoroutine(Possess(other.gameObject));
         }
     }
 }

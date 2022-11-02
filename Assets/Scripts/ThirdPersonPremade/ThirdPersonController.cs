@@ -76,6 +76,7 @@ namespace StarterAssets
         public bool LockCameraPosition = false;
 
         public bool crouched = false;
+        public bool dead = false;
         public PlayerHudManager hud;
         private int health = 100;
         public int Health
@@ -183,6 +184,7 @@ namespace StarterAssets
             if (animatorClipInfo.Length > 0) { _currentAnimation = animatorClipInfo[0].clip.name; }
             GroundedCheck();
             JumpAndGravity();
+            if (dead) { return; }
             if (!_animator.GetCurrentAnimatorStateInfo(0).IsName("Interact") && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left") && !_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Right"))
             {
                 Move();
@@ -381,9 +383,15 @@ namespace StarterAssets
 
             Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
-            // move the player
-            _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
-                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            Collider[] blocked = Physics.OverlapBox(transform.position + (Vector3.up * 0.9f) + targetDirection.normalized * (_speed * 1.2f * Time.deltaTime) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime, new Vector3(0.25f, 0.7f, 0.25f), Quaternion.identity, GroundLayers);
+            if (blocked.Length <= 0)
+            {
+                // move the player
+                _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
+                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            }
+            
 
             // update animator if using character
             if (_hasAnimator)
@@ -516,6 +524,15 @@ namespace StarterAssets
         public void Damage()
         {
             Health -= 5;
+        }
+
+        public void ReleaseMouse()
+        {
+            dead = true;
+            _animator.SetBool("KnockedOut", true);
+            _input.cursorLocked = false;
+            _input.cursorInputForLook = false;
+            Cursor.lockState = CursorLockMode.None;
         }
     }
 }

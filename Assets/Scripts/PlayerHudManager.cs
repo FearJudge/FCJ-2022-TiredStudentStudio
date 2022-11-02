@@ -13,6 +13,7 @@ public class PlayerHudManager : MonoBehaviour
     public int[] thresholdForNextIcon;
     public Animator promptAnimator;
     public RectTransform[] cards;
+    public GameObject gameOver;
 
     public MarkerPool pool;
 
@@ -31,6 +32,7 @@ public class PlayerHudManager : MonoBehaviour
     public void DrawPlayerHP(int value, int valueMax)
     {
         playerHP.value = (float)value / valueMax;
+        if (value <= 0) { gameOver.SetActive(true); GameManager.controller.ReleaseMouse(); }
     }
 
     public void AddObjectToPoolOfSeen(GameObject newObject)

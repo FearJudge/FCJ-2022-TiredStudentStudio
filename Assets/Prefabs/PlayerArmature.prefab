@@ -1144,9 +1144,13 @@ MonoBehaviour:
   BottomClamp: -30
   CameraAngleOverride: 0
   LockCameraPosition: 0
+  crouched: 0
+  dead: 0
+  hud: {fileID: 0}
   meleeHitCount: 0
   _fistColLeft: {fileID: 1762682262}
   _fistColRight: {fileID: 1762682264}
+  heldPerson: {fileID: 0}
   _input: {fileID: 0}
   _currentAnimation: 
 --- !u!114 &5885216827943657505
@@ -1455,6 +1459,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8626512282341172403}
   - component: {fileID: 1762682264}
+  - component: {fileID: 5838862124368184768}
   m_Layer: 0
   m_Name: Right_Hand
   m_TagString: Fist
@@ -1495,6 +1500,19 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.11
   m_Center: {x: 0, y: -0.07, z: -0.005}
+--- !u!114 &5838862124368184768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5403032428067713898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a46c1e142803c34d9eb6d346db78d1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toHit: 7
 --- !u!1 &5653482252439368515
 GameObject:
   m_ObjectHideFlags: 0
@@ -2582,6 +2600,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9186500496127808867}
   - component: {fileID: 1762682262}
+  - component: {fileID: 9033834385255936134}
   m_Layer: 0
   m_Name: Left_Hand
   m_TagString: Fist
@@ -2622,6 +2641,19 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.11
   m_Center: {x: 0, y: 0.07, z: 0.005}
+--- !u!114 &9033834385255936134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9029242941628065318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a46c1e142803c34d9eb6d346db78d1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toHit: 7
 --- !u!1 &9090225697883493277
 GameObject:
   m_ObjectHideFlags: 0
