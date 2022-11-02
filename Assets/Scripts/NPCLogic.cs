@@ -19,7 +19,9 @@ public class NPCLogic : MonoBehaviour, ICarryable
         NervouslyWaiting,
         Carried,
         FleeToHome,
-        RunAroundAimlessly
+        RunAroundAimlessly,
+        AttackingButDazed,
+        FleeingButDazed,
     }
 
     public enum VillagerType
@@ -94,6 +96,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private const float _lookAroundRange = 1f;
     private int _shadowsToChase = 0;
     private const int _shadowsSeenWhenDelirious = 6;
+    private float _timeKnockedOut = 0f;
+    private const float _gripStrength = 0.2f;
     private Animator _animator;
     private bool _hasAnimator;
     private CharacterController _controller;
@@ -107,11 +111,13 @@ public class NPCLogic : MonoBehaviour, ICarryable
     public bool incapacitate;
 
     public int maxTimeToIncapacitate = 4;
-    public int hitsToKnockout = 3;
+    private int _hitsToKnockout = 1;
+    private int _hitsToKnockoutAlert = 2;
     public float meleeTimer;
     public int meleeHitCount;
 
-    [SerializeField] private ThirdPersonController ThirdPersonController;
+    [SerializeField] private ThirdPersonController _thirdPersonController;
+    private SacrificialSite inOfferingRange;
 
     public VillagerState State {
         get
@@ -141,7 +147,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     private void Start()
     {
-        ThirdPersonController = GameObject.Find("PlayerArmature").GetComponent<ThirdPersonController>();
+        _thirdPersonController = GameManager.controller;
         SortTasks();
     }
 
@@ -161,8 +167,10 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 LostInterest?.Invoke(gameObject);
                 _animator.SetBool("KnockedOut", true);
                 _animator.SetBool("Carried", false);
+                _timeKnockedOut = 10f;
                 break;
             case VillagerState.AttackingPlayer:
+                NoticedPlayer?.Invoke(gameObject);
                 nma.enabled = true;
                 nma.speed = speedWalkRun.y;
                 break;
@@ -176,6 +184,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 _animator.SetBool("Carried", true);
                 break;
             case VillagerState.FleeToHome:
+                NoticedPlayer?.Invoke(gameObject);
                 nma.enabled = true;
                 nma.speed = speedWalkRun.y;
                 FleeHome();
@@ -185,10 +194,27 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 nma.speed = speedWalkRun.x;
                 break;
             case VillagerState.RunAroundAimlessly:
+                NoticedPlayer?.Invoke(gameObject);
                 nma.enabled = true;
                 nma.speed = speedWalkRun.y;
                 _shadowsToChase = _shadowsSeenWhenDelirious;
                 ChaseShadows();
+                break;
+            case VillagerState.AttackingButDazed:
+                if (nma.enabled) { nma.ResetPath(); }
+                nma.enabled = false;
+                LostInterest?.Invoke(gameObject);
+                _animator.SetBool("KnockedOut", true);
+                _animator.SetBool("Carried", false);
+                _timeKnockedOut = 3f;
+                break;
+            case VillagerState.FleeingButDazed:
+                if (nma.enabled) { nma.ResetPath(); }
+                nma.enabled = false;
+                LostInterest?.Invoke(gameObject);
+                _animator.SetBool("KnockedOut", true);
+                _animator.SetBool("Carried", false);
+                _timeKnockedOut = 3f;
                 break;
             default:
                 break;
@@ -214,7 +240,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     void ReEvaluate()
     {
-        if (state == VillagerState.AttackingPlayer) { StartCoroutine(LoseInterest()); }
+        if (state == VillagerState.AttackingPlayer && !eyes.inVision) { StartCoroutine(LoseInterest()); }
+        else if (state == VillagerState.AttackingPlayer) { Attack(); }
         else if (state == VillagerState.FleeToHome) { StartCoroutine(LoseFear()); }
         else if (state == VillagerState.RunAroundAimlessly) { ChaseShadows(); }
     }
@@ -242,23 +269,37 @@ public class NPCLogic : MonoBehaviour, ICarryable
         _shadowsToChase--;
     }
 
+    void Incapacitate()
+    {
+        switch (state)
+        {
+            case VillagerState.AttackingPlayer:
+                State = VillagerState.AttackingButDazed;
+                break;
+            case VillagerState.FleeToHome:
+                State = VillagerState.FleeingButDazed;
+                break;
+            case VillagerState.RunAroundAimlessly:
+                State = VillagerState.FleeingButDazed;
+                break;
+            default:
+                State = VillagerState.Incapacitated;
+                break;
+        }
+        meleeHitCount = 0;
+    }
+
     private void Update()
     {
-        if (_carryMeSenpai != null) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; }
+        if (_timeKnockedOut > 0f) { _timeKnockedOut -= Time.deltaTime; if (_timeKnockedOut <= 0f) { Recover(); } }
+        if (_carryMeSenpai != null && _timeKnockedOut > 0f) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; _timeKnockedOut += Time.deltaTime * _gripStrength; }
+
+        CheckForMeleeLogic();
+
         if (!nma.enabled) { return; }
-
-        CheckForMeleeAttackCount();
-
-        if (incapacitate)
-        {
-            State = VillagerState.Incapacitated;
-            return;
-        }
-
         if (nma.remainingDistance <= targetRadius) { ReEvaluate(); }
         if (eyes.inVision && (state == VillagerState.DoingTasks || state == VillagerState.LookingForPlayer))
         {
-            NoticedPlayer?.Invoke(gameObject);
             switch (onSpotting)
             {
                 case VillagerType.Attacking:
@@ -285,21 +326,97 @@ public class NPCLogic : MonoBehaviour, ICarryable
         }
     }
 
-    private void CheckForMeleeAttackCount()
+    private void CheckForMeleeLogic()
     {
-        if (meleeHitCount > 0 && meleeTimer > 0)
+        void Alert()
         {
-            meleeTimer -= Time.deltaTime;
-            if (meleeHitCount == hitsToKnockout)
+            if (meleeHitCount > 0 && meleeTimer > 0)
             {
-                incapacitate = true;
+                meleeTimer -= Time.deltaTime;
+
+                if (meleeHitCount == _hitsToKnockoutAlert)
+                {
+                    Incapacitate();
+                }
+            }
+            else
+            {
+                meleeHitCount = 0;
+                meleeTimer = maxTimeToIncapacitate;
             }
         }
-        else
+
+        void Oblivious()
         {
-            meleeHitCount = 0;
-            meleeTimer = maxTimeToIncapacitate;
+            if (meleeHitCount > 0 && meleeTimer > 0)
+            {
+                meleeTimer -= Time.deltaTime;
+
+                if (meleeHitCount == _hitsToKnockout)
+                {
+                    Incapacitate();
+                }
+            }
+            else
+            {
+                meleeHitCount = 0;
+                meleeTimer = maxTimeToIncapacitate;
+            }
         }
+
+        if (incapacitate) { return; }
+        switch (state)
+        {
+            case VillagerState.AttackingPlayer:
+                Alert();
+                break;
+            case VillagerState.FleeToHome:
+                Alert();
+                break;
+            case VillagerState.AttackingButDazed:
+                return;
+            case VillagerState.FleeingButDazed:
+                return;
+            default:
+                Oblivious();
+                break;
+        }
+        
+    }
+
+    void Recover()
+    {
+        if (_carryMeSenpai != null) { ReleaseCarriedState(); }
+        switch (state)
+        {
+            case VillagerState.Incapacitated:
+                State = VillagerState.DoingTasks;
+                break;
+            case VillagerState.AttackingButDazed:
+                State = VillagerState.AttackingPlayer;
+                break;
+            case VillagerState.FleeingButDazed:
+                State = VillagerState.FleeToHome;
+                break;
+            default:
+                break;
+        }
+        incapacitate = false;
+        _animator.SetBool("KnockedOut", false);
+    }
+
+    void Attack()
+    {
+        if (_animator.GetBool("Melee2")) { return; }
+        _animator.SetBool("Melee2", true);
+        nma.speed = 0f;
+        Invoke("AttackEnd", 1f);
+    }
+
+    void AttackEnd()
+    {
+        _animator.SetBool("Melee2", false);
+        nma.speed = speedWalkRun.y;
     }
 
     private void OnFootstep(AnimationEvent animationEvent)
@@ -316,20 +433,29 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     private void OnTriggerEnter(Collider other)
     {
+        
         if (other.CompareTag("Fist"))
         {
-            if (ThirdPersonController._currentAnimation == "Punching_Left" || ThirdPersonController._currentAnimation == "Punching_Right")
+            if (_thirdPersonController._currentAnimation == "Punching_Left" || _thirdPersonController._currentAnimation == "Punching_Right")
             {
                 meleeHitCount++;
             }
-            if (ThirdPersonController._currentAnimation == "Pickup" && incapacitate)
+            if (_thirdPersonController._currentAnimation == "Pickup" && (AmICarryable() || _carryMeSenpai != null))
             {
-                SetCarriedState(GameObject.Find("PlayerArmature").transform);
+                SetCarriedState(GameManager.playerTransform, new Vector3(0f, 0f, 0f));
             }
         }
-        else
+        else if (other.CompareTag("SacrificialSite"))
         {
-            return;
+            inOfferingRange = other.GetComponent<SacrificialSite>();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("SacrificialSite"))
+        {
+            inOfferingRange = null;
         }
     }
 
@@ -346,7 +472,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         State = VillagerState.LookingForPlayer;
         for (int a = 0; a < _lookAroundSteps; a++)
         {
-            if (state == VillagerState.AttackingPlayer) { yield break; }
+            if (state != VillagerState.LookingForPlayer) { yield break; }
             nma.destination += new Vector3(Random.Range(-_lookAroundRange, _lookAroundRange), 0f, Random.Range(-_lookAroundRange, _lookAroundRange));
             yield return new WaitForSeconds(_waitLookAround / _lookAroundSteps);
         }
@@ -363,24 +489,24 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     public bool AmICarryable()
     {
-        return (state == VillagerState.Incapacitated);
+        return (state == VillagerState.Incapacitated || state == VillagerState.FleeingButDazed || state == VillagerState.AttackingButDazed) && _carryMeSenpai == null;
     }
 
     public void SetCarriedState(Transform toAttachTo, Vector3 offset = default)
     {
-        if (!AmICarryable()) { return; }
+        if (!AmICarryable() || GameManager.controller.heldPerson != null) { return; }
         _carryMeSenpai = toAttachTo;
         _safeDistanceFromSenpai = offset;
-        State = VillagerState.Carried;
+        GameManager.controller.heldPerson = this;
         if (_rigidbody != null) { _rigidbody.isKinematic = true; }
     }
 
-    public void ReleaseCarriedState()
-    {
-        if (state != VillagerState.Carried) { return; }
+    public void ReleaseCarriedState(bool sacrifice = false)
+    { 
         _carryMeSenpai = null;
-        State = VillagerState.Incapacitated;
+        GameManager.controller.heldPerson = null;
         if (_rigidbody != null) { _rigidbody.isKinematic = false; }
+        if (inOfferingRange != null && sacrifice) { inOfferingRange.Sacrifice(this); }
     }
 
     public bool AmIInteractable()
@@ -390,7 +516,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     public void Interact()
     {
-        if (AmICarryable()) { SetCarriedState(GameManager.playerTransform, new Vector3(0f, 0.5f, 0f)); }
+        if (AmICarryable()) { SetCarriedState(GameManager.playerTransform, new Vector3(0f, 0f, 0f)); }
         else { ReleaseCarriedState(); }
     }
 

@@ -29,6 +29,9 @@ public class SacrificialSite : MonoBehaviour
 
     public void Sacrifice(NPCLogic villager)
     {
+        Debug.Log("Sacrificed: " + villager.villagerName);
+        Debug.Log("Was to be sacrificed on: " + villager.killBy.ToString());
+        Debug.Log("Was killed via: " + typeOfSite.ToString());
         Destroy(villager.gameObject);
     }
 }

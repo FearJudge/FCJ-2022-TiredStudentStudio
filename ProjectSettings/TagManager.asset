@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - Fist
+  - SacrificialSite
   layers:
   - Default
   - TransparentFX

@@ -5,6 +5,7 @@ using UnityEngine;
 public class EnemyVision : MonoBehaviour
 {
     public float maximumDistanceToSee = 1000f;
+    public float maximumDistanceToSeeCrouched = 600f;
     public string tagToFind;
     public GameObject mainBody;
     public Vector3 stdOffset = new Vector3(0f, 1f, 0f);
@@ -16,9 +17,19 @@ public class EnemyVision : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         if (other.tag != tagToFind) { return; }
+        float seeDistance = 0f;
+        switch (GameManager.controller.crouched)
+        {
+            case true:
+                seeDistance = maximumDistanceToSeeCrouched;
+                break;
+            default:
+                seeDistance = maximumDistanceToSee;
+                break;
+        }
 
         Ray castRay = new Ray(mainBody.transform.position + stdOffset, other.transform.position - mainBody.transform.position);
-        bool saw = Physics.Raycast(castRay, out RaycastHit info, maximumDistanceToSee, lm);
+        bool saw = Physics.Raycast(castRay, out RaycastHit info, seeDistance, lm);
         if (saw && info.transform.tag == tagToFind) { inVision = true; lastSeen = info.point; }
     }
 

@@ -19,7 +19,7 @@ public class CarryableObject : MonoBehaviour, ICarryable
         return !_carried;
     }
 
-    public void ReleaseCarriedState()
+    public void ReleaseCarriedState(bool sacrifice = false)
     {
         _carried = false;
         if (_rigidbody != null) { _rigidbody.isKinematic = false; }
@@ -55,5 +55,5 @@ public interface ICarryable : IInteract
 {
     bool AmICarryable();
     void SetCarriedState(Transform toAttachTo, Vector3 offset = default);
-    void ReleaseCarriedState();
+    void ReleaseCarriedState(bool sacrifice = false);
 }

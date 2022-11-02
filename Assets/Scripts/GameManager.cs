@@ -26,7 +26,14 @@ public class GameManager : MonoBehaviour
     public int innocentsPerGame = 12;
     public int innocentRandomRangeUpDown = 0;
     public static Transform playerTransform;
+    public static StarterAssets.ThirdPersonController controller;
     public Transform elevateToStaticPlayer;
+
+    private void Awake()
+    {
+        playerTransform = elevateToStaticPlayer;
+        controller = playerTransform.GetComponent<StarterAssets.ThirdPersonController>();
+    }
 
     private void Start()
     {
