@@ -76,6 +76,14 @@ namespace StarterAssets
         public bool LockCameraPosition = false;
 
         public bool crouched = false;
+        public PlayerHudManager hud;
+        private int health = 100;
+        public int Health
+            {
+                get { return health; }
+                set { health = value; hud.DrawPlayerHP(health, _maxHealth); }
+            }
+        private const int _maxHealth = 100;
 
         // cinemachine
         private float _cinemachineTargetYaw;
@@ -198,12 +206,14 @@ namespace StarterAssets
                 if (_input.crouch && heldPerson == null)
                 {
                     _animator.SetBool(_animIDCrouching, true);
+                    hud.DisplayCards(true);
                     crouched = true;
                 }
                 else
                 {
                     _animator.SetBool(_animIDCrouching, false);
                     crouched = false;
+                    hud.DisplayCards(false);
                 }
             }
 
@@ -493,6 +503,19 @@ namespace StarterAssets
             {
                 AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
             }
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag("Hurting"))
+            {
+                Health -= 5;
+            }
+        }
+
+        public void Damage()
+        {
+            Health -= 5;
         }
     }
 }

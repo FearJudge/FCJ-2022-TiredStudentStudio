@@ -22,6 +22,16 @@ public class NPCLogic : MonoBehaviour, ICarryable
         RunAroundAimlessly,
         AttackingButDazed,
         FleeingButDazed,
+        LookingAround
+    }
+
+    public enum VillagerSuspicion
+    {
+        Neutral,
+        ThoughtISawSomething,
+        ThoughtIHeardSomething,
+        ISawThePlayer,
+        Panic
     }
 
     public enum VillagerType
@@ -85,15 +95,19 @@ public class NPCLogic : MonoBehaviour, ICarryable
     public bool attacksPlayer = false;
     public Vector2 speedWalkRun = new Vector2(2f, 3f);
     Vector2 _speedWalkRunAnim = new Vector2(2f, 5.9f);
+    public Collider[] hitBoxes;
 
     public AudioClip[] FootstepAudioClips;
     [Range(0, 1)] public float FootstepAudioVolume;
     public AudioClip LandingAudioClip;
-    public float targetRadius = 3f;
+    public LookAtMeAllwaysSenpai marker;
+    public float targetRadius = 2f;
 
     private const float _waitLookAround = 7f;
     private const int _lookAroundSteps = 5;
     private const float _lookAroundRange = 1f;
+    private const float _sightRequired = 1.3f;
+    private float _sightToPlayer = 0f;
     private int _shadowsToChase = 0;
     private const int _shadowsSeenWhenDelirious = 6;
     private float _timeKnockedOut = 0f;
@@ -107,6 +121,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private Vector3 _safeDistanceFromSenpai;
 
     VillagerState state = VillagerState.DoingTasks;
+    VillagerSuspicion playerKnowledge = VillagerSuspicion.Neutral;
 
     public bool incapacitate;
 
@@ -148,6 +163,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private void Start()
     {
         _thirdPersonController = GameManager.controller;
+        for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = false; }
         SortTasks();
     }
 
@@ -156,9 +172,11 @@ public class NPCLogic : MonoBehaviour, ICarryable
         switch (state)
         {
             case VillagerState.DoingTasks:
+                meleeHitCount = 0;
                 nma.enabled = true;
                 nma.speed = speedWalkRun.x;
                 LostInterest?.Invoke(gameObject);
+                playerKnowledge = VillagerSuspicion.Neutral;
                 DoTask();
                 break;
             case VillagerState.Incapacitated:
@@ -175,6 +193,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 nma.speed = speedWalkRun.y;
                 break;
             case VillagerState.LookingForPlayer:
+                meleeHitCount = 0;
                 nma.enabled = true;
                 nma.speed = speedWalkRun.x;
                 break;
@@ -190,10 +209,12 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 FleeHome();
                 break;
             case VillagerState.NervouslyWaiting:
+                meleeHitCount = 0;
                 nma.enabled = true;
                 nma.speed = speedWalkRun.x;
                 break;
             case VillagerState.RunAroundAimlessly:
+                meleeHitCount = 0;
                 NoticedPlayer?.Invoke(gameObject);
                 nma.enabled = true;
                 nma.speed = speedWalkRun.y;
@@ -206,7 +227,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 LostInterest?.Invoke(gameObject);
                 _animator.SetBool("KnockedOut", true);
                 _animator.SetBool("Carried", false);
-                _timeKnockedOut = 3f;
+                _timeKnockedOut = 7f;
                 break;
             case VillagerState.FleeingButDazed:
                 if (nma.enabled) { nma.ResetPath(); }
@@ -214,7 +235,13 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 LostInterest?.Invoke(gameObject);
                 _animator.SetBool("KnockedOut", true);
                 _animator.SetBool("Carried", false);
-                _timeKnockedOut = 3f;
+                _timeKnockedOut = 7f;
+                break;
+            case VillagerState.LookingAround:
+                meleeHitCount = 0;
+                nma.enabled = true;
+                nma.speed = speedWalkRun.x;
+                StartCoroutine(Confused());
                 break;
             default:
                 break;
@@ -289,17 +316,11 @@ public class NPCLogic : MonoBehaviour, ICarryable
         meleeHitCount = 0;
     }
 
-    private void Update()
+    public void Spot()
     {
-        if (_timeKnockedOut > 0f) { _timeKnockedOut -= Time.deltaTime; if (_timeKnockedOut <= 0f) { Recover(); } }
-        if (_carryMeSenpai != null && _timeKnockedOut > 0f) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; _timeKnockedOut += Time.deltaTime * _gripStrength; }
-
-        CheckForMeleeLogic();
-
-        if (!nma.enabled) { return; }
-        if (nma.remainingDistance <= targetRadius) { ReEvaluate(); }
-        if (eyes.inVision && (state == VillagerState.DoingTasks || state == VillagerState.LookingForPlayer))
+        if (state == VillagerState.DoingTasks || state == VillagerState.LookingForPlayer || state == VillagerState.LookingAround)
         {
+            playerKnowledge = VillagerSuspicion.ISawThePlayer;
             switch (onSpotting)
             {
                 case VillagerType.Attacking:
@@ -317,7 +338,73 @@ public class NPCLogic : MonoBehaviour, ICarryable
                     break;
                 default:
                     break;
-            }}
+            }
+        }
+    }
+
+    void RaiseSuspicion(bool ally)
+    {
+        NoticedPlayer?.Invoke(gameObject);
+        _sightToPlayer += Time.deltaTime * eyes.visionStrength;
+        _sightToPlayer = Mathf.Clamp(_sightToPlayer, 0f, _sightRequired);
+        marker.marker.color = new Color(_sightToPlayer / _sightRequired,
+            0f,
+            playerKnowledge == VillagerSuspicion.Neutral? 1f : 0f,
+            Mathf.Clamp(_sightToPlayer / _sightRequired + (playerKnowledge == VillagerSuspicion.Neutral ? 0f : 1f), 0.2f, 1f));
+
+        switch (ally)
+        {
+            case true:
+                if (_sightToPlayer >= _sightRequired && playerKnowledge == VillagerSuspicion.Neutral)
+                {
+                    playerKnowledge = VillagerSuspicion.ThoughtISawSomething; _sightToPlayer = 0f;
+                    State = VillagerState.LookingAround;
+                }
+                else if (_sightToPlayer >= _sightRequired && playerKnowledge == VillagerSuspicion.ThoughtISawSomething)
+                { State = VillagerState.RunAroundAimlessly; playerKnowledge = VillagerSuspicion.Panic; }
+                break;
+            default:
+                if (_sightToPlayer >= _sightRequired && playerKnowledge == VillagerSuspicion.Neutral)
+                {
+                    playerKnowledge = VillagerSuspicion.ThoughtISawSomething; _sightToPlayer = 0f;
+                    State = VillagerState.LookingAround;
+                }
+                else if (_sightToPlayer >= _sightRequired && playerKnowledge == VillagerSuspicion.ThoughtISawSomething)
+                { Spot(); playerKnowledge = VillagerSuspicion.ISawThePlayer; }
+                break;
+        }
+        
+    }
+
+    void LowerSuspicion()
+    {
+        if ((_sightToPlayer == 0 && playerKnowledge == VillagerSuspicion.Neutral) || marker == null) { return; }
+
+        _sightToPlayer -= Time.deltaTime;
+        _sightToPlayer = Mathf.Clamp(_sightToPlayer, 0f, _sightRequired);
+        marker.marker.color = new Color(_sightToPlayer / _sightRequired,
+            0f,
+            playerKnowledge == VillagerSuspicion.Neutral ? 1f : 0f,
+            Mathf.Clamp(_sightToPlayer / _sightRequired + (playerKnowledge == VillagerSuspicion.Neutral ? 0f : 1f), 0.2f, 1f));
+
+        if (_sightToPlayer <= 0f && (playerKnowledge == VillagerSuspicion.Panic || playerKnowledge == VillagerSuspicion.ISawThePlayer))
+        { playerKnowledge = VillagerSuspicion.Neutral; _sightToPlayer = _sightRequired * (2f / 3f); }
+        else if (_sightToPlayer <= 0f && playerKnowledge == VillagerSuspicion.ThoughtISawSomething)
+        { LostInterest?.Invoke(gameObject); }
+    }
+
+    private void Update()
+    {
+        if (_timeKnockedOut > 0f) { _timeKnockedOut -= Time.deltaTime; if (_timeKnockedOut <= 0f) { Recover(); } }
+        if (_carryMeSenpai != null && _timeKnockedOut > 0f) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; _timeKnockedOut += Time.deltaTime * _gripStrength; }
+
+        CheckForMeleeLogic();
+
+        if (!nma.enabled) { return; }
+        if (eyes.inVision) { RaiseSuspicion(eyes.isAlly); }
+        else if (playerKnowledge != VillagerSuspicion.ISawThePlayer && playerKnowledge != VillagerSuspicion.Panic) { LowerSuspicion(); }
+        if (nma.remainingDistance <= targetRadius) { ReEvaluate(); }
+        
         if (state == VillagerState.AttackingPlayer) { ChasePlayer(); }
 
         if (_hasAnimator)
@@ -334,7 +421,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
             {
                 meleeTimer -= Time.deltaTime;
 
-                if (meleeHitCount == _hitsToKnockoutAlert)
+                if (meleeHitCount >= _hitsToKnockoutAlert)
                 {
                     Incapacitate();
                 }
@@ -352,7 +439,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
             {
                 meleeTimer -= Time.deltaTime;
 
-                if (meleeHitCount == _hitsToKnockout)
+                if (meleeHitCount >= _hitsToKnockout)
                 {
                     Incapacitate();
                 }
@@ -410,12 +497,14 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (_animator.GetBool("Melee2")) { return; }
         _animator.SetBool("Melee2", true);
         nma.speed = 0f;
+        for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = true; }
         Invoke("AttackEnd", 1f);
     }
 
     void AttackEnd()
     {
         _animator.SetBool("Melee2", false);
+        for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = true; }
         nma.speed = speedWalkRun.y;
     }
 
@@ -480,10 +569,24 @@ public class NPCLogic : MonoBehaviour, ICarryable
         State = VillagerState.DoingTasks;
     }
 
+    IEnumerator Confused()
+    {
+        for (int a = 0; a < _lookAroundSteps; a++)
+        {
+            if (state != VillagerState.LookingAround) { yield break; }
+            if (!eyes.inVision)
+            { nma.destination += new Vector3(Random.Range(-_lookAroundRange, _lookAroundRange), 0f, Random.Range(-_lookAroundRange, _lookAroundRange)); }
+            yield return new WaitForSeconds(_waitLookAround / _lookAroundSteps);
+        }
+        if (state != VillagerState.LookingAround) { yield break; }
+        State = VillagerState.DoingTasks;
+    }
+
     IEnumerator LoseFear()
     {
         State = VillagerState.NervouslyWaiting;
         yield return new WaitForSeconds(_waitLookAround);
+        if (state != VillagerState.NervouslyWaiting) { yield break; }
         State = VillagerState.DoingTasks;
     }
 
@@ -520,4 +623,9 @@ public class NPCLogic : MonoBehaviour, ICarryable
         else { ReleaseCarriedState(); }
     }
 
+    private void OnDestroy()
+    {
+        if (marker == null) { return; }
+        marker.Unset();
+    }
 }

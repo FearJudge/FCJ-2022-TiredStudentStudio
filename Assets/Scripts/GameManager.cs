@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
             int _ran = Random.Range(0, _workList.Count);
             TarotCard _randomCard = _workList[_ran];
             _workList.RemoveAt(_ran);
-            GameObject _newNPC = Instantiate(villagerKnowledge.npcPrefab);
+            GameObject _newNPC = Instantiate(villagerKnowledge.npcPrefab, villagerKnowledge.spawnPoints[Random.Range(0, villagerKnowledge.spawnPoints.Length)].position, Quaternion.identity);
             NPCLogic _newLogic = _newNPC.GetComponent<NPCLogic>();
             _newLogic.villagerName = villagerKnowledge.GenerateName();
             if (_randomCard.overrideCharacterDailyRoutine)
@@ -63,7 +63,7 @@ public class GameManager : MonoBehaviour
         }
         for (int j = 0; j < innocentsPerGame; j++)
         {
-            GameObject _newNPC = Instantiate(villagerKnowledge.npcPrefab);
+            GameObject _newNPC = Instantiate(villagerKnowledge.npcPrefab, villagerKnowledge.spawnPoints[j].position, Quaternion.identity);
             NPCLogic _newLogic = _newNPC.GetComponent<NPCLogic>();
             _newLogic.villagerName = villagerKnowledge.GenerateName();
             _newLogic.tasksToDo = villagerKnowledge.GenerateRandomTasks();

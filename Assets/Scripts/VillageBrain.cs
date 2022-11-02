@@ -9,6 +9,7 @@ public class VillageBrain : MonoBehaviour
     public float waitPerTick = 0.06f;
     public const int LOOPENDTIME = 1440;
     public Transform[] pointsOfInterest;
+    public Transform[] spawnPoints;
     public static Dictionary<string, Transform> locationDict = new Dictionary<string, Transform>();
     public Transform player;
 

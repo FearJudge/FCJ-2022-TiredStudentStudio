@@ -7,6 +7,8 @@ TagManager:
   - CinemachineTarget
   - Fist
   - SacrificialSite
+  - Hurting
+  - Enemy
   layers:
   - Default
   - TransparentFX
