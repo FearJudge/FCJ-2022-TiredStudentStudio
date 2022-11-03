@@ -131,6 +131,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private int _hitsToKnockoutAlert = 2;
     public float meleeTimer;
     public int meleeHitCount;
+    public ParticleSystem hauntedParticles;
+    ParticleSystem.MainModule psmm;
 
     [SerializeField] private ThirdPersonController _thirdPersonController;
     private SacrificialSite inOfferingRange;
@@ -165,6 +167,26 @@ public class NPCLogic : MonoBehaviour, ICarryable
     {
         _thirdPersonController = GameManager.controller;
         for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = false; }
+        psmm = hauntedParticles.main;
+        switch (haunted)
+        {
+            case HauntedBy.None:
+                break;
+            case HauntedBy.BlueSpiritOfSorrow:
+                psmm.startColor = Color.blue;
+                hauntedParticles.Play();
+                break;
+            case HauntedBy.RedSpiritOfHatred:
+                psmm.startColor = Color.red;
+                hauntedParticles.Play();
+                break;
+            case HauntedBy.GreenSpiritOfEnvy:
+                psmm.startColor = Color.green;
+                hauntedParticles.Play();
+                break;
+        }
+
+        SacrificialSite.Tribute += Exorcise;
         SortTasks();
     }
 
@@ -379,7 +401,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     void LowerSuspicion()
     {
-        if ((_sightToPlayer == 0 && playerKnowledge == VillagerSuspicion.Neutral) || marker == null) { return; }
+        if ((_sightToPlayer == 0 && playerKnowledge == VillagerSuspicion.Neutral) || marker == null) { if (marker != null) { marker.marker.color = Color.clear; } return; }
 
         _sightToPlayer -= Time.deltaTime;
         _sightToPlayer = Mathf.Clamp(_sightToPlayer, 0f, _sightRequired);
@@ -632,8 +654,17 @@ public class NPCLogic : MonoBehaviour, ICarryable
         else { ReleaseCarriedState(); }
     }
 
+    public void Exorcise(HauntedBy type, SacrificialSite.SacrificeSite site)
+    {
+        if (haunted != type) { return; }
+        haunted = HauntedBy.None;
+        hauntedParticles.Stop();
+        killBy = GoalToAchieve.DoNotKill;
+    }
+
     private void OnDestroy()
     {
+        SacrificialSite.Tribute -= Exorcise;
         if (marker == null) { return; }
         marker.Unset();
     }

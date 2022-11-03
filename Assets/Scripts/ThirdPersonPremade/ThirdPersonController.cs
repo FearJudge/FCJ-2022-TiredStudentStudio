@@ -134,7 +134,7 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
         private PlayerInput _playerInput;
 #endif
-        private Animator _animator;
+        [SerializeField] private Animator _animator;
         private CharacterController _controller;
         public StarterAssetsInputs _input;
         private Transform _mainCamera;
@@ -162,13 +162,21 @@ namespace StarterAssets
         private void Awake()
         {
             _mainCamera = Camera.main.transform;
+            SacrificialSite.Tribute += SuccessfulSacrifice;
+            SacrificialSite.PointlessSacrifice += FailedSacrifice;
+        }
+
+        private void OnDestroy()
+        {
+            SacrificialSite.Tribute -= SuccessfulSacrifice;
+            SacrificialSite.PointlessSacrifice -= FailedSacrifice;
         }
 
         private void Start()
         {
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
-            _hasAnimator = TryGetComponent(out _animator);
+
+            _hasAnimator = true;
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
@@ -536,7 +544,7 @@ namespace StarterAssets
                 GroundedRadius);
         }
 
-        private void OnFootstep(AnimationEvent animationEvent)
+        public void OnFootstep(AnimationEvent animationEvent)
         {
             if (animationEvent.animatorClipInfo.weight > 0.5f)
             {
@@ -548,7 +556,7 @@ namespace StarterAssets
             }
         }
 
-        private void OnLand(AnimationEvent animationEvent)
+        public void OnLand(AnimationEvent animationEvent)
         {
             if (animationEvent.animatorClipInfo.weight > 0.5f)
             {
@@ -564,6 +572,16 @@ namespace StarterAssets
             }
         }
 
+        private void OnTriggerStay(Collider other)
+        {
+            if (other.CompareTag("SacrificialSite"))
+            {
+                SacrificialSite ss = other.GetComponent<SacrificialSite>();
+                if (heldPerson == null) { hud.DisplayMessage(ss.siteUnheldMessages[(int)ss.typeOfSite]); }
+                else { hud.DisplayMessage(ss.siteHeldMessages[(int)ss.typeOfSite]); }
+            }
+        }
+
         public void Damage()
         {
             Health -= 5;
@@ -576,6 +594,18 @@ namespace StarterAssets
             _input.cursorLocked = false;
             _input.cursorInputForLook = false;
             Cursor.lockState = CursorLockMode.None;
+        }
+
+        public void FailedSacrifice(NPCLogic.HauntedBy haunt, SacrificialSite.SacrificeSite site)
+        {
+            Damage();
+            if (haunt == NPCLogic.HauntedBy.None) { hud.DisplayMessage("Iku-Valr is displeased with your time wasting", 6); }
+            else { hud.DisplayMessage("This method will not exorcise the competing spirit", 6); }
+        }
+
+        public void SuccessfulSacrifice(NPCLogic.HauntedBy haunt, SacrificialSite.SacrificeSite site)
+        {
+            hud.DisplayMessage("One of the competing spirits has left this realm.", 6);
         }
     }
 }
