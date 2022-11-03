@@ -15,6 +15,7 @@ namespace StarterAssets
 		public bool melee;
 		public bool crouch;
 		public bool interact;
+        public bool show;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -61,6 +62,10 @@ namespace StarterAssets
 		{
 			InteractInput(value.isPressed);
 		}
+        public void OnShow(InputValue value)
+        {
+            ShowInput(value.isPressed);
+        }
 
 #endif
 
@@ -99,6 +104,10 @@ namespace StarterAssets
 		{
 			interact = newInteractState;
 		}
+        public void ShowInput(bool newShowState)
+        {
+            show = newShowState;
+        }
 
 		private void OnApplicationFocus(bool hasFocus)
 		{

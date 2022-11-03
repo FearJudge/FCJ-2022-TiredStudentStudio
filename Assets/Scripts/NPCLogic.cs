@@ -107,6 +107,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private const int _lookAroundSteps = 5;
     private const float _lookAroundRange = 1f;
     private const float _sightRequired = 1.3f;
+    private float moveSpeed = 3f;
     private float _sightToPlayer = 0f;
     private int _shadowsToChase = 0;
     private const int _shadowsSeenWhenDelirious = 6;
@@ -174,7 +175,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
             case VillagerState.DoingTasks:
                 meleeHitCount = 0;
                 nma.enabled = true;
-                nma.speed = speedWalkRun.x;
+                moveSpeed = speedWalkRun.x;
                 LostInterest?.Invoke(gameObject);
                 playerKnowledge = VillagerSuspicion.Neutral;
                 DoTask();
@@ -190,12 +191,12 @@ public class NPCLogic : MonoBehaviour, ICarryable
             case VillagerState.AttackingPlayer:
                 NoticedPlayer?.Invoke(gameObject);
                 nma.enabled = true;
-                nma.speed = speedWalkRun.y;
+                moveSpeed = speedWalkRun.y;
                 break;
             case VillagerState.LookingForPlayer:
                 meleeHitCount = 0;
                 nma.enabled = true;
-                nma.speed = speedWalkRun.x;
+                moveSpeed = speedWalkRun.x;
                 break;
             case VillagerState.Carried:
                 if (nma.enabled) { nma.ResetPath(); }
@@ -205,19 +206,19 @@ public class NPCLogic : MonoBehaviour, ICarryable
             case VillagerState.FleeToHome:
                 NoticedPlayer?.Invoke(gameObject);
                 nma.enabled = true;
-                nma.speed = speedWalkRun.y;
+                moveSpeed = speedWalkRun.y;
                 FleeHome();
                 break;
             case VillagerState.NervouslyWaiting:
                 meleeHitCount = 0;
                 nma.enabled = true;
-                nma.speed = speedWalkRun.x;
+                moveSpeed = speedWalkRun.x;
                 break;
             case VillagerState.RunAroundAimlessly:
                 meleeHitCount = 0;
                 NoticedPlayer?.Invoke(gameObject);
                 nma.enabled = true;
-                nma.speed = speedWalkRun.y;
+                moveSpeed = speedWalkRun.y;
                 _shadowsToChase = _shadowsSeenWhenDelirious;
                 ChaseShadows();
                 break;
@@ -240,7 +241,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
             case VillagerState.LookingAround:
                 meleeHitCount = 0;
                 nma.enabled = true;
-                nma.speed = speedWalkRun.x;
+                moveSpeed = speedWalkRun.x;
                 StartCoroutine(Confused());
                 break;
             default:
@@ -401,6 +402,15 @@ public class NPCLogic : MonoBehaviour, ICarryable
         CheckForMeleeLogic();
 
         if (!nma.enabled) { return; }
+        switch (playerKnowledge)
+        {
+            case VillagerSuspicion.Neutral: nma.speed = moveSpeed; break;
+            case VillagerSuspicion.ThoughtISawSomething: nma.speed = 0f; break;
+            case VillagerSuspicion.ThoughtIHeardSomething: nma.speed = 0f; break;
+            case VillagerSuspicion.ISawThePlayer: nma.speed = moveSpeed; break;
+            case VillagerSuspicion.Panic: nma.speed = moveSpeed; break;
+            default: break;
+        }
         if (eyes.inVision) { RaiseSuspicion(eyes.isAlly); }
         else if (playerKnowledge != VillagerSuspicion.ISawThePlayer && playerKnowledge != VillagerSuspicion.Panic) { LowerSuspicion(); }
         if (nma.remainingDistance <= targetRadius) { ReEvaluate(); }
@@ -494,8 +504,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     void Attack()
     {
-        if (_animator.GetBool("Melee2")) { return; }
-        _animator.SetBool("Melee2", true);
+        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left")) { return; }
+        _animator.SetTrigger("Melee");
         nma.speed = 0f;
         for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = true; }
         Invoke("AttackEnd", 1f);
@@ -503,8 +513,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
     void AttackEnd()
     {
-        _animator.SetBool("Melee2", false);
-        for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = true; }
+        for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = false; }
         nma.speed = speedWalkRun.y;
     }
 

@@ -85,6 +85,7 @@ namespace StarterAssets
                 set { health = value; hud.DrawPlayerHP(health, _maxHealth); }
             }
         private const int _maxHealth = 100;
+        bool heldMelee;
 
         // cinemachine
         private float _cinemachineTargetYaw;
@@ -122,6 +123,11 @@ namespace StarterAssets
         [SerializeField] private SphereCollider _fistColLeft; 
         [SerializeField] private SphereCollider _fistColRight;
         #endregion
+
+        Collider[] bodyCheckPosX;
+        Collider[] bodyCheckNegX;
+        Collider[] bodyCheckPosZ;
+        Collider[] bodyCheckNegZ;
 
         public NPCLogic heldPerson;
 
@@ -208,14 +214,12 @@ namespace StarterAssets
                 if (_input.crouch && heldPerson == null)
                 {
                     _animator.SetBool(_animIDCrouching, true);
-                    hud.DisplayCards(true);
                     crouched = true;
                 }
                 else
                 {
                     _animator.SetBool(_animIDCrouching, false);
                     crouched = false;
-                    hud.DisplayCards(false);
                 }
             }
 
@@ -233,6 +237,14 @@ namespace StarterAssets
                 else
                 {
                     _animator.SetBool(_animIDInteract, false);
+                }
+                if (_input.show)
+                {
+                    hud.DisplayCards(true);
+                }
+                else
+                {
+                    hud.DisplayCards(false);
                 }
             }
         }
@@ -263,13 +275,14 @@ namespace StarterAssets
             if (_hasAnimator)
             {
                 if (heldPerson != null) { _input.melee = false; }
-                if (_input.melee)
+                if (_input.melee && !heldMelee)
                 {
-                    _animator.SetBool(_animIDMelee, true);
+                    _animator.SetTrigger(_animIDMelee);
+                    heldMelee = true;
                 }
-                else
+                else if (!_input.melee)
                 {
-                    _animator.SetBool(_animIDMelee, false);
+                    heldMelee = false;
                 }
             }
         }
@@ -286,7 +299,7 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
-            _animIDMelee = Animator.StringToHash("Melee2");
+            _animIDMelee = Animator.StringToHash("Melee");
             _animIDInteract = Animator.StringToHash("Interact");
             _animIDCrouching = Animator.StringToHash("Crouch");
         }
@@ -382,16 +395,35 @@ namespace StarterAssets
 
 
             Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-
-            Collider[] blocked = Physics.OverlapBox(transform.position + (Vector3.up * 0.9f) + targetDirection.normalized * (_speed * 1.2f * Time.deltaTime) +
-                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime, new Vector3(0.25f, 0.7f, 0.25f), Quaternion.identity, GroundLayers);
-            if (blocked.Length <= 0)
+            ColliderSet();
+            float strength = 0.012f * _speed;
+            if (bodyCheckNegX.Length > 0)
+            {
+                transform.position += new Vector3(1f ,0f, 0f) * strength;
+            }
+            if (bodyCheckPosX.Length > 0)
+            {
+                transform.position += new Vector3(-1f, 0f, 0f) * strength;
+            }
+            if (bodyCheckNegZ.Length > 0)
+            {
+                transform.position += new Vector3(0f, 0f, 1f) * strength;
+            }
+            if (bodyCheckPosZ.Length > 0)
+            {
+                transform.position += new Vector3(0f, 0f, -1f) * strength;
+            }
+            if (bodyCheckNegZ.Length + bodyCheckPosZ.Length + bodyCheckPosX.Length + bodyCheckNegX.Length < 2)
             {
                 // move the player
                 _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                                  new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
             }
-            
+            else if (bodyCheckNegZ.Length + bodyCheckPosZ.Length + bodyCheckPosX.Length + bodyCheckNegX.Length >= 4)
+            {
+                transform.position += new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)) * strength;
+            }
+
 
             // update animator if using character
             if (_hasAnimator)
@@ -399,6 +431,17 @@ namespace StarterAssets
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
             }
+        }
+
+        void ColliderSet()
+        {
+            float height = 1.4f;
+            float bodyCollSize = 0.45f + Time.deltaTime * _speed;
+            Vector3 bodyBox = new Vector3(0.45f, 0.8f, 0.45f);
+            bodyCheckPosX = Physics.OverlapBox(new Vector3((transform.position.x + bodyCollSize), transform.position.y + height, transform.position.z), bodyBox, Quaternion.identity, GroundLayers);
+            bodyCheckNegX = Physics.OverlapBox(new Vector3((transform.position.x - bodyCollSize), transform.position.y + height, transform.position.z), bodyBox, Quaternion.identity, GroundLayers);
+            bodyCheckPosZ = Physics.OverlapBox(new Vector3(transform.position.x, transform.position.y + height, (transform.position.z + bodyCollSize)), bodyBox, Quaternion.identity, GroundLayers);
+            bodyCheckNegZ = Physics.OverlapBox(new Vector3(transform.position.x, transform.position.y + height, (transform.position.z - bodyCollSize)), bodyBox, Quaternion.identity, GroundLayers);
         }
 
         private void JumpAndGravity()
