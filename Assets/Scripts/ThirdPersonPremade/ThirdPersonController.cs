@@ -192,6 +192,7 @@ namespace StarterAssets
             // reset our timeouts on start
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         private void Update()
@@ -209,7 +210,6 @@ namespace StarterAssets
             InteractCheck();
             CrouchCheck();
             if (invulnerable > 0f) { invulnerable -= Time.deltaTime; }
-            if (Input.GetKeyDown(KeyCode.Escape)) { Health -= 200; }
         }
 
 
