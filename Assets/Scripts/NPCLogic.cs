@@ -100,6 +100,9 @@ public class NPCLogic : MonoBehaviour, ICarryable
     public AudioClip[] FootstepAudioClips;
     [Range(0, 1)] public float FootstepAudioVolume;
     public AudioClip LandingAudioClip;
+    public AudioClip CollapseAudioClip;
+    public AudioClip[] DraggingAudioClips;
+    public AudioClip FistAudioClip;
     public LookAtMeAllwaysSenpai marker;
     public float targetRadius = 2f;
 
@@ -112,6 +115,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private int _shadowsToChase = 0;
     private const int _shadowsSeenWhenDelirious = 6;
     private float _timeKnockedOut = 0f;
+    private float _dragNoiseTime = 0.2f;
     private const float _gripStrength = 0.2f;
     private Animator _animator;
     private bool _hasAnimator;
@@ -419,6 +423,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private void Update()
     {
         if (_timeKnockedOut > 0f) { _timeKnockedOut -= Time.deltaTime; if (_timeKnockedOut <= 0f) { Recover(); } }
+        if (_timeKnockedOut > 0f && _carryMeSenpai != null) { _dragNoiseTime -= Time.deltaTime; if (_dragNoiseTime <= 0f) { MakeDragNoise(); } }
         if (_carryMeSenpai != null && _timeKnockedOut > 0f) { transform.position = _carryMeSenpai.position + _safeDistanceFromSenpai; _timeKnockedOut += Time.deltaTime * _gripStrength; }
 
         CheckForMeleeLogic();
@@ -443,6 +448,12 @@ public class NPCLogic : MonoBehaviour, ICarryable
         {
             _animator.SetFloat("Speed", nma.velocity.magnitude * ((nma.speed == speedWalkRun.y) ? _speedWalkRunAnim.y : _speedWalkRunAnim.x) / nma.speed);
         }
+    }
+
+    void MakeDragNoise()
+    {
+        AudioSource.PlayClipAtPoint(DraggingAudioClips[Random.Range(0, DraggingAudioClips.Length)], transform.TransformPoint(_controller.center), FootstepAudioVolume);
+        _dragNoiseTime = Random.Range(1.3f, 2.4f);
     }
 
     private void CheckForMeleeLogic()
@@ -530,7 +541,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         _animator.SetTrigger("Melee");
         nma.speed = 0f;
         for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = true; }
-        Invoke("AttackEnd", 1f);
+        Invoke("AttackEnd", 0.6f);
     }
 
     void AttackEnd()
@@ -556,8 +567,9 @@ public class NPCLogic : MonoBehaviour, ICarryable
         
         if (other.CompareTag("Fist"))
         {
-            if (_thirdPersonController._currentAnimation == "Punching_Left" || _thirdPersonController._currentAnimation == "Punching_Right")
+            if (_thirdPersonController._currentAnimation == "Punching_Left" || _thirdPersonController._currentAnimation == "Swing")
             {
+                AudioSource.PlayClipAtPoint(FistAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
                 meleeHitCount++;
             }
             if (_thirdPersonController._currentAnimation == "Pickup" && (AmICarryable() || _carryMeSenpai != null))
@@ -584,6 +596,14 @@ public class NPCLogic : MonoBehaviour, ICarryable
         if (animationEvent.animatorClipInfo.weight > 0.5f)
         {
             AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
+        }
+    }
+
+    private void OnCollapse(AnimationEvent animationEvent)
+    {
+        if (animationEvent.animatorClipInfo.weight > 0.5f)
+        {
+            AudioSource.PlayClipAtPoint(CollapseAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
         }
     }
 

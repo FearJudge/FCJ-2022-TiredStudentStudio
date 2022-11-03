@@ -24,22 +24,22 @@ public class SacrificialSite : MonoBehaviour
     public string[] siteUnheldMessages = new string[]
     {
         "Bring a Villager here to HANG them.",
-        "Bring a Villager here to BEHEAD them.",
+        "Bring a Villager here to CHOP them.",
         "Bring a Villager here to TORCH them.",
         "Bring a Villager here to BREAK them apart.",
         "Bring a Villager here to DISPOSE of them.",
-        "Bring a Villager here to BEHEAD them.",
+        "Bring a Villager here to SWIFTLY BEHEAD them.",
         "Bring a Villager here to IMPALE them.",
         "Bring a Villager here to STARVE them."
     };
     public string[] siteHeldMessages = new string[]
     {
         "Release the Villager TO HANG THEM.",
-        "Release the Villager TO BEHEAD THEM.",
+        "Release the Villager TO CHOP THEM.",
         "Release the Villager TO TORCH THEM.",
         "Release the Villager TO BREAK THEM.",
         "Release the Villager TO DISPOSE OF THEM.",
-        "Release the Villager TO BEHEAD THEM.",
+        "Release the Villager TO SWIFTLY BEHEAD THEM.",
         "Release the Villager TO IMPALE THEM.",
         "Release the Villager TO STARVE THEM."
     };
@@ -57,9 +57,6 @@ public class SacrificialSite : MonoBehaviour
 
     public void Sacrifice(NPCLogic villager)
     {
-        Debug.Log("Sacrificed: " + villager.villagerName);
-        Debug.Log("Was to be sacrificed on: " + villager.killBy.ToString());
-        Debug.Log("Was killed via: " + typeOfSite.ToString());
         if ((int)villager.killBy - 1 == (int)typeOfSite) { Tribute?.Invoke(villager.haunted, typeOfSite); }
         else { PointlessSacrifice?.Invoke(villager.haunted, typeOfSite); }
 
