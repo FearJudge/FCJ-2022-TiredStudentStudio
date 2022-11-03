@@ -883,7 +883,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2181141000615637709}
   - component: {fileID: 1517476144835487860}
-  - component: {fileID: 6816210115842391245}
   m_Layer: 0
   m_Name: SM_MH_01_Wood_Pillar_06 (3)
   m_TagString: Untagged
@@ -921,20 +920,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8948991481754492513, guid: 496e8b06540ba4e41bb7610ac0d9b11f, type: 3}
---- !u!136 &6816210115842391245
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1517476144835487863}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 3.5403535
-  m_Direction: 1
-  m_Center: {x: 1.562323e-10, y: 1.2701819, z: -1.439428e-10}
 --- !u!1 &1517476144982523324
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,7 +930,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2181141000477452038}
   - component: {fileID: 1517476144982523327}
-  - component: {fileID: 4569538038602492434}
   m_Layer: 0
   m_Name: SM_MH_01_Wood_Pillar_06 (2)
   m_TagString: Untagged
@@ -983,20 +967,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8948991481754492513, guid: 496e8b06540ba4e41bb7610ac0d9b11f, type: 3}
---- !u!136 &4569538038602492434
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1517476144982523324}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 3.5815296
-  m_Direction: 1
-  m_Center: {x: 0.0000000017179947, y: 1.2907726, z: -6.494493e-10}
 --- !u!1 &1517476146067698111
 GameObject:
   m_ObjectHideFlags: 0
@@ -1007,7 +977,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2181141001573116677}
   - component: {fileID: 1517476146067698108}
-  - component: {fileID: 3183968352449944197}
   m_Layer: 0
   m_Name: SM_MH_01_Wood_Pillar_06 (1)
   m_TagString: Untagged
@@ -1045,20 +1014,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8948991481754492513, guid: 496e8b06540ba4e41bb7610ac0d9b11f, type: 3}
---- !u!136 &3183968352449944197
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1517476146067698111}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 3.494951
-  m_Direction: 1
-  m_Center: {x: 0.0000000039699555, y: 1.3380361, z: 0}
 --- !u!1 &4367753426336066362
 GameObject:
   m_ObjectHideFlags: 0
@@ -2987,26 +2942,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a5e9625ca96b494a85a8300ee0da07e, type: 3}
---- !u!1 &1517476145161076382 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1881053242355990550, guid: 0a5e9625ca96b494a85a8300ee0da07e,
-    type: 3}
-  m_PrefabInstance: {fileID: 1087055770325728904}
-  m_PrefabAsset: {fileID: 0}
---- !u!136 &2270122616564852831
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1517476145161076382}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 3.560916
-  m_Direction: 1
-  m_Center: {x: -0.000000007013266, y: 1.2804812, z: -0.0000000021249884}
 --- !u!4 &2181141000330945572 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1247786653553629868, guid: 0a5e9625ca96b494a85a8300ee0da07e,
