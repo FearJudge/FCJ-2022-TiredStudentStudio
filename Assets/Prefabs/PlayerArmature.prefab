@@ -106,7 +106,6 @@ MonoBehaviour:
   dead: 0
   hud: {fileID: 0}
   meleeHitCount: 0
-  _fistColLeft: {fileID: 0}
   _fistColRight: {fileID: 0}
   heldPerson: {fileID: 0}
   _animator: {fileID: 3221648248546827329}
@@ -369,6 +368,11 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 0f16be1752137be4a85005578cd91bd5,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0f16be1752137be4a85005578cd91bd5, type: 3}
 --- !u!95 &3221648248546827329 stripped

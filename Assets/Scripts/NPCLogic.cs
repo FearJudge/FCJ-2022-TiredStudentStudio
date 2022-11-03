@@ -117,7 +117,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private float _timeKnockedOut = 0f;
     private float _dragNoiseTime = 0.2f;
     private const float _gripStrength = 0.2f;
-    private Animator _animator;
+    [SerializeField] private Animator animator;
     private bool _hasAnimator;
     private CharacterController _controller;
 
@@ -159,11 +159,10 @@ public class NPCLogic : MonoBehaviour, ICarryable
     private void Awake()
     {
         InvokeRepeating("CheckLogic", 0.4f, 0.4f);
-        _animator = GetComponent<Animator>();
         _controller = GetComponent<CharacterController>();
-        _hasAnimator = (_animator != null);
-        _animator.SetBool("Grounded", true);
-        _animator.SetFloat("MotionSpeed", 1f);
+        _hasAnimator = (animator != null);
+        animator.SetBool("Grounded", true);
+        animator.SetFloat("MotionSpeed", 1f);
         _rigidbody = GetComponent<Rigidbody>();
     }
 
@@ -210,8 +209,8 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 if (nma.enabled) { nma.ResetPath(); }
                 nma.enabled = false;
                 LostInterest?.Invoke(gameObject);
-                _animator.SetBool("KnockedOut", true);
-                _animator.SetBool("Carried", false);
+                animator.SetBool("KnockedOut", true);
+                animator.SetBool("Carried", false);
                 _timeKnockedOut = 10f;
                 break;
             case VillagerState.AttackingPlayer:
@@ -227,7 +226,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
             case VillagerState.Carried:
                 if (nma.enabled) { nma.ResetPath(); }
                 nma.enabled = false;
-                _animator.SetBool("Carried", true);
+                animator.SetBool("Carried", true);
                 break;
             case VillagerState.FleeToHome:
                 NoticedPlayer?.Invoke(gameObject);
@@ -252,16 +251,16 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 if (nma.enabled) { nma.ResetPath(); }
                 nma.enabled = false;
                 LostInterest?.Invoke(gameObject);
-                _animator.SetBool("KnockedOut", true);
-                _animator.SetBool("Carried", false);
+                animator.SetBool("KnockedOut", true);
+                animator.SetBool("Carried", false);
                 _timeKnockedOut = 7f;
                 break;
             case VillagerState.FleeingButDazed:
                 if (nma.enabled) { nma.ResetPath(); }
                 nma.enabled = false;
                 LostInterest?.Invoke(gameObject);
-                _animator.SetBool("KnockedOut", true);
-                _animator.SetBool("Carried", false);
+                animator.SetBool("KnockedOut", true);
+                animator.SetBool("Carried", false);
                 _timeKnockedOut = 7f;
                 break;
             case VillagerState.LookingAround:
@@ -446,7 +445,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
 
         if (_hasAnimator)
         {
-            _animator.SetFloat("Speed", nma.velocity.magnitude * ((nma.speed == speedWalkRun.y) ? _speedWalkRunAnim.y : _speedWalkRunAnim.x) / nma.speed);
+            animator.SetFloat("Speed", nma.velocity.magnitude * ((nma.speed == speedWalkRun.y) ? _speedWalkRunAnim.y : _speedWalkRunAnim.x) / nma.speed);
         }
     }
 
@@ -532,13 +531,13 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 break;
         }
         incapacitate = false;
-        _animator.SetBool("KnockedOut", false);
+        animator.SetBool("KnockedOut", false);
     }
 
     void Attack()
     {
-        if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left")) { return; }
-        _animator.SetTrigger("Melee");
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left")) { return; }
+        animator.SetTrigger("Melee");
         nma.speed = 0f;
         for (int a = 0; a < hitBoxes.Length; a++) { hitBoxes[a].enabled = true; }
         Invoke("AttackEnd", 0.6f);
@@ -550,7 +549,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         nma.speed = speedWalkRun.y;
     }
 
-    private void OnFootstep(AnimationEvent animationEvent)
+    public void OnFootstep(AnimationEvent animationEvent)
     {
         if (animationEvent.animatorClipInfo.weight > 0.5f)
         {
@@ -591,7 +590,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         }
     }
 
-    private void OnLand(AnimationEvent animationEvent)
+    public void OnLand(AnimationEvent animationEvent)
     {
         if (animationEvent.animatorClipInfo.weight > 0.5f)
         {
@@ -599,7 +598,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
         }
     }
 
-    private void OnCollapse(AnimationEvent animationEvent)
+    public void OnCollapse(AnimationEvent animationEvent)
     {
         if (animationEvent.animatorClipInfo.weight > 0.5f)
         {

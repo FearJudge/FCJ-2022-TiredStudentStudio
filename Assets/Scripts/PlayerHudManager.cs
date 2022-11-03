@@ -8,11 +8,10 @@ public class PlayerHudManager : MonoBehaviour
     private List<GameObject> npcsKnowingOfPlayer = new List<GameObject>();
     private List<LookAtMeAllwaysSenpai> markers = new List<LookAtMeAllwaysSenpai>();
     public Slider playerHP;
-    public Image stealthNotification;
-    public Sprite[] allStealthIcons;
     public int[] thresholdForNextIcon;
     public Animator promptAnimator;
     public Animator messageAnimator;
+    public Animator introAnimator;
     public TMPro.TextMeshProUGUI textMessage;
     public RectTransform[] cards;
     public Image[] cardBorders;
@@ -44,7 +43,7 @@ public class PlayerHudManager : MonoBehaviour
 
     public void Victory()
     {
-        victoryScreen.SetActive(true);
+        victoryScreen.SetActive(true); GameManager.controller.ReleaseMouse(true);
     }
 
     public void AddObjectToPoolOfSeen(GameObject newObject)
@@ -54,7 +53,6 @@ public class PlayerHudManager : MonoBehaviour
         LookAtMeAllwaysSenpai lap = pool.GetPooledObjectComponent(newObject.transform);
         markers.Add(lap);
         newObject.GetComponent<NPCLogic>().marker = lap;
-        UpdateStealthIcon();
     }
 
     public void RemoveObjectFromPoolOfSeen(GameObject oldObject)
@@ -65,7 +63,6 @@ public class PlayerHudManager : MonoBehaviour
         markers.Remove(npc.marker);
         npc.marker.gameObject.SetActive(false);
         npc.marker = null;
-        UpdateStealthIcon();
     }
 
     public void DisplayCards(bool state)
@@ -102,17 +99,6 @@ public class PlayerHudManager : MonoBehaviour
         }
     }
 
-    public void UpdateStealthIcon()
-    {
-        int amount = npcsKnowingOfPlayer.Count;
-        for (int a = 0; a < allStealthIcons.Length; a++)
-        {
-            if (amount <= 0) { stealthNotification.sprite = allStealthIcons[a]; return; }
-            amount -= thresholdForNextIcon[a];
-        }
-        if (amount > 0) { stealthNotification.sprite = allStealthIcons[allStealthIcons.Length - 1]; }
-    }
-
     public void DisplayMessage(string msg, int priority = 3, float time = 0.6f)
     {
         if (priority >= _priorityMessage) { textMessage.text = msg; _priorityMessage = priority; _msgTime = time; };
@@ -131,5 +117,10 @@ public class PlayerHudManager : MonoBehaviour
         messageAnimator.SetBool("Display", false);
         yield return new WaitForSeconds(0.4f);
         _priorityMessage = 0;
+    }
+
+    public void EndIntro()
+    {
+        introAnimator.SetTrigger("EndIntro");
     }
 }

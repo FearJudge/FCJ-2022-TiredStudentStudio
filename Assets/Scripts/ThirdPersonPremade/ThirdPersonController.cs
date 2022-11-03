@@ -209,6 +209,7 @@ namespace StarterAssets
             InteractCheck();
             CrouchCheck();
             if (invulnerable > 0f) { invulnerable -= Time.deltaTime; }
+            if (Input.GetKeyDown(KeyCode.Escape)) { Health -= 200; }
         }
 
 
@@ -280,6 +281,7 @@ namespace StarterAssets
                 if (heldPerson != null) { _input.melee = false; }
                 if (_input.melee && !heldMelee)
                 {
+                    hud.EndIntro();
                     _animator.SetTrigger(_animIDMelee);
                     heldMelee = true;
                 }
@@ -438,7 +440,7 @@ namespace StarterAssets
 
         void ColliderSet()
         {
-            float height = 0.8f;
+            float height = 1f;
             float bodyCollSize = 0.38f + Time.deltaTime * _speed;
             Vector3 bodyBox = new Vector3(0.38f, 0.4f, 0.38f);
             bodyCheckPosX = Physics.OverlapBox(new Vector3((transform.position.x + bodyCollSize), transform.position.y + height, transform.position.z), bodyBox, Quaternion.identity, GroundLayers);
@@ -593,10 +595,10 @@ namespace StarterAssets
             invulnerable = 1f;
         }
 
-        public void ReleaseMouse()
+        public void ReleaseMouse(bool victory = false)
         {
             dead = true;
-            _animator.SetBool("KnockedOut", true);
+            if (!victory) { _animator.SetBool("KnockedOut", true); }
             _input.cursorLocked = false;
             _input.cursorInputForLook = false;
             Cursor.lockState = CursorLockMode.None;
