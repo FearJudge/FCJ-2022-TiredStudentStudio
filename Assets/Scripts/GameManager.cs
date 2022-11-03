@@ -46,6 +46,18 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         SetUpGame();
+        SacrificialSite.Tribute += ProgressUp;
+    }
+
+    private void OnDestroy()
+    {
+        SacrificialSite.Tribute -= ProgressUp;
+    }
+
+    void ProgressUp(NPCLogic.HauntedBy haunted, SacrificialSite.SacrificeSite type)
+    {
+        targetsPerGame--;
+        if (targetsPerGame <= 0) { controller.Victory(); }
     }
 
     public void SetUpGame()

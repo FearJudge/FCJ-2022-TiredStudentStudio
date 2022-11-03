@@ -73,9 +73,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6154872350348145706}
+  - component: {fileID: 149001956858420654}
   m_Layer: 8
   m_Name: Skeleton
-  m_TagString: Untagged
+  m_TagString: Hurting
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -96,6 +97,19 @@ Transform:
   m_Father: {fileID: 6963796902845532851}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &149001956858420654
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355654757478638029}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.9, y: 0.7, z: 0.6}
+  m_Center: {x: 0, y: 1, z: 0.5}
 --- !u!1 &683963751394869260
 GameObject:
   m_ObjectHideFlags: 0
@@ -519,7 +533,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2383570947989814891}
-  - component: {fileID: 6987645674160701506}
   m_Layer: 8
   m_Name: Right_Hand
   m_TagString: Hurting
@@ -547,19 +560,6 @@ Transform:
   m_Father: {fileID: 2728395584352414811}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &6987645674160701506
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2042610359629949362}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.08
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2673356945722141010
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,7 +945,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3017028666569199547}
-  - component: {fileID: 6467606202261984429}
   m_Layer: 8
   m_Name: Left_Hand
   m_TagString: Hurting
@@ -973,19 +972,6 @@ Transform:
   m_Father: {fileID: 8143862626744724861}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &6467606202261984429
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3165452800026180862}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.08
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3184674781583394141
 GameObject:
   m_ObjectHideFlags: 0
@@ -7173,8 +7159,7 @@ MonoBehaviour:
   attacksPlayer: 0
   speedWalkRun: {x: 4.2, y: 10}
   hitBoxes:
-  - {fileID: 6467606202261984429}
-  - {fileID: 6987645674160701506}
+  - {fileID: 149001956858420654}
   FootstepAudioClips:
   - {fileID: 8300000, guid: 72f526a6a9890f643a88e85a61c86c8a, type: 3}
   - {fileID: 8300000, guid: 85016e0f2b01da248b9663dd49a161b0, type: 3}
@@ -7188,6 +7173,15 @@ MonoBehaviour:
   - {fileID: 8300000, guid: a3194b8bbc96ef84fab1f98f4b7dae3e, type: 3}
   FootstepAudioVolume: 1
   LandingAudioClip: {fileID: 8300000, guid: ff697d3070687ce4583faa0561a145a2, type: 3}
+  CollapseAudioClip: {fileID: 8300000, guid: 7bdeba72119691349871d4ebe8db5a2e, type: 3}
+  DraggingAudioClips:
+  - {fileID: 8300000, guid: c3fe88430d441614ba2eeda89bfdc507, type: 3}
+  - {fileID: 8300000, guid: 4cf6d3aac43604c419de64173536482f, type: 3}
+  - {fileID: 8300000, guid: 893e53a266493be45bc8bbb1e68bb806, type: 3}
+  - {fileID: 8300000, guid: 96c10260d18da264dada07eb3a711595, type: 3}
+  - {fileID: 8300000, guid: 90bf2c15c5e2c584e8fa71c321670d0e, type: 3}
+  - {fileID: 8300000, guid: 501bdb79f645e5c4dab54e5eefce951d, type: 3}
+  FistAudioClip: {fileID: 8300000, guid: 9bc8b6bc873d01a4b9d6ca953357ae3b, type: 3}
   marker: {fileID: 0}
   targetRadius: 0.3
   incapacitate: 0

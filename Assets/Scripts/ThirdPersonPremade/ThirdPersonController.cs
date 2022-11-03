@@ -30,6 +30,8 @@ namespace StarterAssets
 
         public AudioClip LandingAudioClip;
         public AudioClip[] FootstepAudioClips;
+        public AudioClip CollapseAudioClip;
+        public AudioClip HurtSound;
         [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
 
         [Space(10)]
@@ -120,7 +122,6 @@ namespace StarterAssets
         #region
         public int meleeHitCount;
 
-        [SerializeField] private SphereCollider _fistColLeft; 
         [SerializeField] private SphereCollider _fistColRight;
         #endregion
 
@@ -157,6 +158,7 @@ namespace StarterAssets
 #endif
             }
         }
+        float invulnerable = 0f;
 
 
         private void Awake()
@@ -206,6 +208,7 @@ namespace StarterAssets
             MeleeCheck();
             InteractCheck();
             CrouchCheck();
+            if (invulnerable > 0f) { invulnerable -= Time.deltaTime; }
         }
 
 
@@ -259,25 +262,17 @@ namespace StarterAssets
 
         private void MeleeCheck()
         {
-            if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Right"))
+            if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Right") || _animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left"))
             {
                 _fistColRight.enabled = true;
-                _fistColLeft.enabled = false;
-            }
-            else if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Punching_Left"))
-            {
-                _fistColRight.enabled = false;
-                _fistColLeft.enabled = true;
             }
             else if (_animator.GetCurrentAnimatorStateInfo(0).IsName("Interact") && _animator.GetCurrentAnimatorStateInfo(0).normalizedTime <= 0.5f)
             {
                 _fistColRight.enabled = true;
-                _fistColLeft.enabled = false;
             }
             else
             {
                 _fistColRight.enabled = false;
-                _fistColLeft.enabled = false;
             }
 
             if (_hasAnimator)
@@ -307,7 +302,7 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
-            _animIDMelee = Animator.StringToHash("Melee");
+            _animIDMelee = Animator.StringToHash("Melee2");
             _animIDInteract = Animator.StringToHash("Interact");
             _animIDCrouching = Animator.StringToHash("Crouch");
         }
@@ -427,7 +422,7 @@ namespace StarterAssets
                 _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                                  new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
             }
-            else if (bodyCheckNegZ.Length + bodyCheckPosZ.Length + bodyCheckPosX.Length + bodyCheckNegX.Length >= 4)
+            else if (bodyCheckNegZ.Length + bodyCheckPosZ.Length + bodyCheckPosX.Length + bodyCheckNegX.Length >= 3)
             {
                 transform.position += new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)) * strength;
             }
@@ -443,9 +438,9 @@ namespace StarterAssets
 
         void ColliderSet()
         {
-            float height = 1.4f;
-            float bodyCollSize = 0.45f + Time.deltaTime * _speed;
-            Vector3 bodyBox = new Vector3(0.45f, 0.8f, 0.45f);
+            float height = 0.8f;
+            float bodyCollSize = 0.38f + Time.deltaTime * _speed;
+            Vector3 bodyBox = new Vector3(0.38f, 0.4f, 0.38f);
             bodyCheckPosX = Physics.OverlapBox(new Vector3((transform.position.x + bodyCollSize), transform.position.y + height, transform.position.z), bodyBox, Quaternion.identity, GroundLayers);
             bodyCheckNegX = Physics.OverlapBox(new Vector3((transform.position.x - bodyCollSize), transform.position.y + height, transform.position.z), bodyBox, Quaternion.identity, GroundLayers);
             bodyCheckPosZ = Physics.OverlapBox(new Vector3(transform.position.x, transform.position.y + height, (transform.position.z + bodyCollSize)), bodyBox, Quaternion.identity, GroundLayers);
@@ -564,11 +559,19 @@ namespace StarterAssets
             }
         }
 
+        public void OnCollapse(AnimationEvent animationEvent)
+        {
+            if (animationEvent.animatorClipInfo.weight > 0.5f)
+            {
+                AudioSource.PlayClipAtPoint(CollapseAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
+            }
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Hurting"))
             {
-                Health -= 5;
+                Damage();
             }
         }
 
@@ -584,7 +587,10 @@ namespace StarterAssets
 
         public void Damage()
         {
+            if (invulnerable > 0f) { return; }
+            AudioSource.PlayClipAtPoint(HurtSound, transform.TransformPoint(_controller.center), FootstepAudioVolume);
             Health -= 5;
+            invulnerable = 1f;
         }
 
         public void ReleaseMouse()
@@ -599,13 +605,19 @@ namespace StarterAssets
         public void FailedSacrifice(NPCLogic.HauntedBy haunt, SacrificialSite.SacrificeSite site)
         {
             Damage();
-            if (haunt == NPCLogic.HauntedBy.None) { hud.DisplayMessage("Iku-Valr is displeased with your time wasting", 6); }
-            else { hud.DisplayMessage("This method will not exorcise the competing spirit", 6); }
+            if (haunt == NPCLogic.HauntedBy.None) { hud.DisplayMessage("Iku-Valr is displeased with your time wasting", 6, 2f); }
+            else { hud.DisplayMessage("This method will not exorcise the competing spirit", 6, 2f); }
         }
 
         public void SuccessfulSacrifice(NPCLogic.HauntedBy haunt, SacrificialSite.SacrificeSite site)
         {
-            hud.DisplayMessage("One of the competing spirits has left this realm.", 6);
+            hud.DisplayMessage("One of the competing spirits has left this realm.", 6, 2f);
+        }
+
+        public void Victory()
+        {
+            invulnerable = 100000000f;
+            hud.Victory();
         }
     }
 }

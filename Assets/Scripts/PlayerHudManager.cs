@@ -15,9 +15,9 @@ public class PlayerHudManager : MonoBehaviour
     public Animator messageAnimator;
     public TMPro.TextMeshProUGUI textMessage;
     public RectTransform[] cards;
-    public Image[] cardImages;
     public Image[] cardBorders;
     public GameObject gameOver;
+    public GameObject victoryScreen;
     bool _initialized = false;
     int _priorityMessage = 0;
     float _msgTime = 0f;
@@ -40,6 +40,11 @@ public class PlayerHudManager : MonoBehaviour
     {
         playerHP.value = (float)value / valueMax;
         if (value <= 0) { gameOver.SetActive(true); GameManager.controller.ReleaseMouse(); }
+    }
+
+    public void Victory()
+    {
+        victoryScreen.SetActive(true);
     }
 
     public void AddObjectToPoolOfSeen(GameObject newObject)
@@ -77,20 +82,20 @@ public class PlayerHudManager : MonoBehaviour
     void Initialize()
     {
         _initialized = true;
-        for (int a = 0; a < cardImages.Length; a++)
+        for (int a = 0; a < cardBorders.Length; a++)
         {
-            cardImages[a].sprite = GameManager.chosenCards[a].cardArt;
+            cardBorders[a].sprite = GameManager.chosenCards[a].cardArt;
             Color hauntedBy = Color.white;
             switch (GameManager.chosenCards[a].personPosessed)
             {
                 case NPCLogic.HauntedBy.BlueSpiritOfSorrow:
-                    hauntedBy = Color.blue;
+                    hauntedBy = new Color(0.8f, 0.8f, 1f);
                     break;
                 case NPCLogic.HauntedBy.RedSpiritOfHatred:
-                    hauntedBy = Color.red;
+                    hauntedBy = new Color(1f, 0.8f, 0.8f);
                     break;
                 case NPCLogic.HauntedBy.GreenSpiritOfEnvy:
-                    hauntedBy = Color.green;
+                    hauntedBy = new Color(0.8f, 1f, 0.8f);
                     break;
             }
             cardBorders[a].color = hauntedBy;

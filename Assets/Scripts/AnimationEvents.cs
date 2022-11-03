@@ -15,4 +15,9 @@ public class AnimationEvents : MonoBehaviour
     {
         tpc.OnLand(animationEvent);
     }
+
+    private void OnCollapse(AnimationEvent animationEvent)
+    {
+        tpc.OnCollapse(animationEvent);
+    }
 }
