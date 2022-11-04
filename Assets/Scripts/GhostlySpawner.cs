@@ -19,6 +19,6 @@ public class GhostlySpawner : MonoBehaviour
 
     void Spawn()
     {
-        Instantiate(ghost, new Vector3(Random.Range(-range.x, range.x), Random.Range(-range.y, range.y), Random.Range(-range.z, range.z)), Quaternion.identity, parent);
+        Instantiate(ghost, new Vector3(Random.Range(-range.x, range.x), Random.Range(-range.y, range.y), Random.Range(-range.z, range.z)) + transform.position, Quaternion.identity, parent);
     }
 }

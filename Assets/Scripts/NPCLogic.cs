@@ -211,7 +211,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 LostInterest?.Invoke(gameObject);
                 animator.SetBool("KnockedOut", true);
                 animator.SetBool("Carried", false);
-                _timeKnockedOut = 10f;
+                _timeKnockedOut = 35f;
                 break;
             case VillagerState.AttackingPlayer:
                 NoticedPlayer?.Invoke(gameObject);
@@ -253,7 +253,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 LostInterest?.Invoke(gameObject);
                 animator.SetBool("KnockedOut", true);
                 animator.SetBool("Carried", false);
-                _timeKnockedOut = 7f;
+                _timeKnockedOut = 28f;
                 break;
             case VillagerState.FleeingButDazed:
                 if (nma.enabled) { nma.ResetPath(); }
@@ -261,7 +261,7 @@ public class NPCLogic : MonoBehaviour, ICarryable
                 LostInterest?.Invoke(gameObject);
                 animator.SetBool("KnockedOut", true);
                 animator.SetBool("Carried", false);
-                _timeKnockedOut = 7f;
+                _timeKnockedOut = 28f;
                 break;
             case VillagerState.LookingAround:
                 meleeHitCount = 0;

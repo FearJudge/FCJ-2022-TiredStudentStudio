@@ -290,6 +290,10 @@ namespace StarterAssets
                     heldMelee = false;
                 }
             }
+            if (_input.escape)
+            {
+                Health -= 100;
+            }
         }
 
         private void LateUpdate()
