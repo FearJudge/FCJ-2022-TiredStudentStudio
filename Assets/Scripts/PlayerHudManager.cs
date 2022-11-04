@@ -15,6 +15,7 @@ public class PlayerHudManager : MonoBehaviour
     public TMPro.TextMeshProUGUI textMessage;
     public RectTransform[] cards;
     public Image[] cardBorders;
+    public Image[] cardImages;
     public GameObject gameOver;
     public GameObject victoryScreen;
     bool _initialized = false;
@@ -81,7 +82,7 @@ public class PlayerHudManager : MonoBehaviour
         _initialized = true;
         for (int a = 0; a < cardBorders.Length; a++)
         {
-            cardBorders[a].sprite = GameManager.chosenCards[a].cardArt;
+            cardImages[a].sprite = GameManager.chosenCards[a].cardArt;
             Color hauntedBy = Color.white;
             switch (GameManager.chosenCards[a].personPosessed)
             {

@@ -16,6 +16,7 @@ namespace StarterAssets
 		public bool crouch;
 		public bool interact;
         public bool show;
+        public bool escape;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -66,6 +67,10 @@ namespace StarterAssets
         {
             ShowInput(value.isPressed);
         }
+        public void OnEscape(InputValue escape)
+        {
+            EscapeInput(escape.isPressed);
+        }
 
 #endif
 
@@ -107,6 +112,10 @@ namespace StarterAssets
         public void ShowInput(bool newShowState)
         {
             show = newShowState;
+        }
+        public void EscapeInput(bool escapeState)
+        {
+            escape = escapeState;
         }
 
 		private void OnApplicationFocus(bool hasFocus)
